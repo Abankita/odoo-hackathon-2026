@@ -254,7 +254,7 @@ export function GamificationClient({
         <div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">DEMO CONTEXT SELECTOR</span>
           <h2 className="text-base font-bold text-slate-900">
-            Active Employee: {activeEmployee?.name} ({activeEmployee?.department.name})
+            Active Employee: {activeEmployee?.name} ({activeEmployee?.department?.name})
           </h2>
         </div>
         <div className="flex items-center gap-3">
@@ -266,7 +266,7 @@ export function GamificationClient({
           >
             {employees.map((emp) => (
               <option key={emp.id} value={emp.id}>
-                {emp.name} ({emp.department.name})
+                {emp.name} ({emp.department?.name})
               </option>
             ))}
           </Select>
@@ -360,7 +360,7 @@ export function GamificationClient({
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-2 flex-wrap">
                             <Badge variant="outline" className="text-emerald-800 border-emerald-200 bg-emerald-50/20 text-[9px] font-bold uppercase">
-                              {challenge.category.name}
+                              {challenge.category?.name}
                             </Badge>
                             <Badge variant="outline" className="text-slate-600 border-slate-200 text-[9px] font-bold uppercase">
                               {challenge.difficulty}
@@ -487,7 +487,7 @@ export function GamificationClient({
                             <p className="text-xs font-bold text-slate-900">
                               {employee.name} {isSelf && <span className="text-emerald-700 text-[10px]">(You)</span>}
                             </p>
-                            <p className="text-[10px] text-slate-400 font-semibold">{employee.department.name}</p>
+                            <p className="text-[10px] text-slate-400 font-semibold">{employee.department?.name}</p>
                           </div>
                         </div>
                         <div className="text-right">

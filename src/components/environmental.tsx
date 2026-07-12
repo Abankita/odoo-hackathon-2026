@@ -282,7 +282,7 @@ export function EnvironmentalClient({
                   <div className="flex justify-between items-start gap-2">
                     <div>
                       <h4 className="text-xs font-bold text-slate-900">{goal.name}</h4>
-                      <p className="text-[10px] text-slate-400 font-semibold">{goal.department.name} department</p>
+                      <p className="text-[10px] text-slate-400 font-semibold">{goal.department?.name} department</p>
                     </div>
                     <Badge variant="outline" className={`${statusTone} text-[9px] font-bold uppercase`}>{goal.status}</Badge>
                   </div>
@@ -332,7 +332,7 @@ export function EnvironmentalClient({
                       <TableCell className="font-medium text-slate-500">
                         {new Date(tx.date).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="font-bold text-slate-800">{tx.department.name}</TableCell>
+                      <TableCell className="font-bold text-slate-800">{tx.department?.name}</TableCell>
                       <TableCell className="font-semibold text-slate-700">{tx.sourceType}</TableCell>
                       <TableCell className="text-right font-semibold text-slate-600">
                         {tx.quantity.toFixed(1)}

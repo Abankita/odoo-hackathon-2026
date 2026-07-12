@@ -212,14 +212,14 @@ export function GovernanceClient({
                           <div>
                             <p className="font-bold text-slate-800">{issue.description}</p>
                             <p className="text-[9px] text-slate-400 font-semibold">
-                              Audit: {issue.audit.title} ({issue.audit.department.name})
+                              Audit: {issue.audit?.title} ({issue.audit?.department?.name})
                             </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={`${sevTone} text-[9px] font-bold`}>{issue.severity}</Badge>
                         </TableCell>
-                        <TableCell className="font-semibold text-slate-700">{issue.owner.name}</TableCell>
+                        <TableCell className="font-semibold text-slate-700">{issue.owner?.name}</TableCell>
                         <TableCell className="font-medium text-slate-600">
                           {new Date(issue.dueDate).toLocaleDateString()}
                         </TableCell>
@@ -264,7 +264,7 @@ export function GovernanceClient({
               <div key={policy.id} className="border border-slate-100 rounded-xl p-4 bg-white space-y-2 shadow-sm">
                 <div className="flex justify-between items-start gap-2">
                   <Badge variant="outline" className="text-violet-850 border-violet-200 bg-violet-50/10 text-[9px] font-bold uppercase">
-                    {policy.category.name}
+                    {policy.category?.name}
                   </Badge>
                   <Badge variant="outline" className={policy.status === "Active" ? "text-emerald-800 border-emerald-200 bg-emerald-50/10 text-[9px]" : "text-slate-500 border-slate-200 text-[9px]"}>
                     {policy.status}
@@ -282,7 +282,7 @@ export function GovernanceClient({
                   <div className="pt-2 flex flex-wrap gap-1 border-t border-slate-50/50">
                     {policy.acknowledgements.map((ack) => (
                       <span key={ack.id} className="text-[9px] bg-slate-50 text-slate-600 border border-slate-100 px-1.5 py-0.5 rounded font-medium">
-                        ✓ {ack.employee.name}
+                        ✓ {ack.employee?.name}
                       </span>
                     ))}
                   </div>
@@ -303,7 +303,7 @@ export function GovernanceClient({
               <div key={audit.id} className="border border-slate-100 rounded-xl p-4 bg-white space-y-2 shadow-sm">
                 <div className="flex justify-between items-start gap-2">
                   <Badge variant="outline" className="text-slate-700 border-slate-200 bg-slate-50 text-[9px] font-bold">
-                    {audit.department.name}
+                    {audit.department?.name}
                   </Badge>
                   <Badge variant="outline" className={audit.status === "Completed" ? "text-emerald-800 border-emerald-200 bg-emerald-50/10 text-[9px]" : "text-amber-800 border-amber-200 bg-amber-50/10 text-[9px]"}>
                     {audit.status}
@@ -349,7 +349,7 @@ export function GovernanceClient({
                     </span>
                   </div>
                   <p className="text-xs font-bold text-slate-800 leading-tight">{notification.message}</p>
-                  <p className="text-[10px] text-slate-500 font-medium">Addressed to: {notification.recipient.name}</p>
+                  <p className="text-[10px] text-slate-500 font-medium">Addressed to: {notification.recipient?.name}</p>
                 </div>
               </div>
             ))

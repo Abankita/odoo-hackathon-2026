@@ -275,7 +275,7 @@ export function ReportsClient({
                     results.map((r) => (
                       <TableRow key={r.id} className="hover:bg-slate-50/30 text-xs">
                         <TableCell className="font-medium text-slate-500">{new Date(r.computedAt).toLocaleDateString()}</TableCell>
-                        <TableCell className="font-bold text-slate-800">{r.department.name}</TableCell>
+                        <TableCell className="font-bold text-slate-800">{r.department?.name}</TableCell>
                         <TableCell className="text-right font-semibold text-slate-700">{r.environmentalScore.toFixed(1)}</TableCell>
                         <TableCell className="text-right font-semibold text-slate-700">{r.socialScore.toFixed(1)}</TableCell>
                         <TableCell className="text-right font-semibold text-slate-700">{r.governanceScore.toFixed(1)}</TableCell>
@@ -287,7 +287,7 @@ export function ReportsClient({
                     results.map((r) => (
                       <TableRow key={r.id} className="hover:bg-slate-50/30 text-xs">
                         <TableCell className="font-medium text-slate-500">{new Date(r.date).toLocaleDateString()}</TableCell>
-                        <TableCell className="font-bold text-slate-800">{r.department.name}</TableCell>
+                        <TableCell className="font-bold text-slate-800">{r.department?.name}</TableCell>
                         <TableCell className="font-semibold text-slate-700">{r.sourceType}</TableCell>
                         <TableCell className="text-right font-semibold text-slate-600">{r.quantity.toFixed(1)}</TableCell>
                         <TableCell className="text-right font-extrabold text-emerald-800">{r.computedCO2.toFixed(1)} kg</TableCell>
@@ -307,8 +307,8 @@ export function ReportsClient({
                         </TableCell>
                         <TableCell className="font-bold text-slate-800">
                           <div>
-                            <p>{r.employee.name}</p>
-                            <p className="text-[9px] text-slate-400 font-semibold">{r.employee.department.name}</p>
+                            <p>{r.employee?.name}</p>
+                            <p className="text-[9px] text-slate-400 font-semibold">{r.employee?.department?.name}</p>
                           </div>
                         </TableCell>
                         <TableCell className="font-semibold text-slate-700">{r.activity.title}</TableCell>
@@ -335,7 +335,7 @@ export function ReportsClient({
                         <TableCell>
                           <div>
                             <p className="font-bold text-slate-800">{r.description}</p>
-                            <p className="text-[9px] text-slate-400 font-semibold">Audit: {r.audit.title} ({r.audit.department.name})</p>
+                            <p className="text-[9px] text-slate-400 font-semibold">Audit: {r.audit?.title} ({r.audit?.department?.name})</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -343,7 +343,7 @@ export function ReportsClient({
                             {r.severity}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-semibold text-slate-700">{r.owner.name}</TableCell>
+                        <TableCell className="font-semibold text-slate-700">{r.owner?.name}</TableCell>
                         <TableCell className="text-center">
                           <Badge className={r.status === "Open" ? "bg-amber-50 text-amber-800 border-amber-100 text-[9px] font-bold" : "bg-emerald-50 text-emerald-800 border-emerald-100 text-[9px] font-bold"}>
                             {r.status}
@@ -355,8 +355,8 @@ export function ReportsClient({
                   {currentModule === "Gamification" &&
                     results.map((r) => (
                       <TableRow key={r.id} className="hover:bg-slate-50/30 text-xs">
-                        <TableCell className="font-bold text-slate-800">{r.challenge.title}</TableCell>
-                        <TableCell className="font-semibold text-slate-650">{r.employee.name}</TableCell>
+                        <TableCell className="font-bold text-slate-800">{r.challenge?.title}</TableCell>
+                        <TableCell className="font-semibold text-slate-650">{r.employee?.name}</TableCell>
                         <TableCell className="text-right font-bold text-slate-700">{r.progress}%</TableCell>
                         <TableCell className="text-right font-extrabold text-amber-600">{r.xpAwarded} XP</TableCell>
                         <TableCell className="text-center">

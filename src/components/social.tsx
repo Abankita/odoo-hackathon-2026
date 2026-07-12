@@ -77,7 +77,7 @@ export function SocialClient({ employees, activities, participations: initialPar
           ...data,
           employee: {
             name: activeEmployee?.name || "",
-            department: { name: activeEmployee?.department.name || "" }
+            department: { name: activeEmployee?.department?.name || "" }
           },
           activity: {
             title: activityTitle,
@@ -142,7 +142,7 @@ export function SocialClient({ employees, activities, participations: initialPar
         <div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">DEMO CONTEXT SELECTOR</span>
           <h2 className="text-base font-bold text-slate-900">
-            Active Employee: {activeEmployee?.name} ({activeEmployee?.department.name})
+            Active Employee: {activeEmployee?.name} ({activeEmployee?.department?.name})
           </h2>
         </div>
         <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export function SocialClient({ employees, activities, participations: initialPar
           >
             {employees.map((emp) => (
               <option key={emp.id} value={emp.id}>
-                {emp.name} ({emp.department.name})
+                {emp.name} ({emp.department?.name})
               </option>
             ))}
           </Select>
@@ -233,7 +233,7 @@ export function SocialClient({ employees, activities, participations: initialPar
                   <div className="space-y-2">
                     <div className="flex justify-between items-start gap-2">
                       <Badge variant="outline" className="text-blue-800 border-blue-200 bg-blue-50/20 text-[9px] font-bold uppercase">
-                        {activity.category.name}
+                        {activity.category?.name}
                       </Badge>
                       <Badge variant="outline" className={activity.evidenceRequired ? "text-red-800 border-red-200 bg-red-50/20 text-[9px]" : "text-slate-600 border-slate-200 bg-slate-50 text-[9px]"}>
                         {activity.evidenceRequired ? "Proof Required" : "No Proof Needed"}
@@ -300,8 +300,8 @@ export function SocialClient({ employees, activities, participations: initialPar
                     <TableRow key={part.id} className="hover:bg-slate-50/50 text-xs">
                       <TableCell className="font-bold text-slate-800">
                         <div>
-                          <p>{part.employee.name}</p>
-                          <p className="text-[9px] text-slate-400 font-semibold">{part.employee.department.name}</p>
+                          <p>{part.employee?.name}</p>
+                          <p className="text-[9px] text-slate-400 font-semibold">{part.employee?.department?.name}</p>
                         </div>
                       </TableCell>
                       <TableCell className="font-semibold text-slate-700">{part.activity.title}</TableCell>
