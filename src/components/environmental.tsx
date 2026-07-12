@@ -100,6 +100,7 @@ export function EnvironmentalClient({
       const unique = all.filter((item, index, self) =>
         index === self.findIndex((t) => t.id === item.id)
       );
+      unique.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       return unique;
     });
   }, [initialTransactions]);
@@ -118,6 +119,7 @@ export function EnvironmentalClient({
             merged.push(t);
           }
         }
+        merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         return merged;
       });
     }
