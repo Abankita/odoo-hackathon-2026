@@ -114,7 +114,7 @@ export function GamificationClient({
       const data = await response.json();
       if (response.ok) {
         setParticipations([...participations, data]);
-        showFeedback("Successfully joined the challenge! Get active and save CO2.", "success");
+        showFeedback("Successfully joined the challenge! Earn XP and save carbon.", "success");
         router.refresh();
       } else {
         showFeedback(data.error || "Failed to join challenge.", "error");
@@ -160,11 +160,11 @@ export function GamificationClient({
         }
 
         // Handle Badge unlocks feedback
-        let msg = "Challenge completed! points and XP awarded.";
+        let msg = "Challenge completed! Points and XP awarded.";
         if (data.badgeResults && data.badgeResults.length > 0) {
           const newlyAwarded = data.badgeResults.filter((b: any) => b.awarded);
           if (newlyAwarded.length > 0) {
-            msg += ` 🎉 BADGE UNLOCKED: ${newlyAwarded.map((b: any) => b.name).join(", ")}!`;
+            msg += ` 🎉 Badge Unlocked: ${newlyAwarded.map((b: any) => b.name).join(", ")}!`;
             // Add new badges to local list
             const newBadges = newlyAwarded.map((badge: any) => ({
               id: Math.random(),
@@ -206,7 +206,7 @@ export function GamificationClient({
               e.id === selectedEmployeeId ? { ...e, points: e.points - reward.pointsRequired } : e
             )
           );
-          showFeedback(`Success! Redeemed: ${reward.name}. Check your email/notifications.`, "success");
+          showFeedback(`Success! Redeemed reward: ${reward.name}.`, "success");
         }
         router.refresh();
       } else {
@@ -223,8 +223,8 @@ export function GamificationClient({
       const threshold = rule.threshold ?? rule.value ?? 0;
       const type = rule.type ?? "XP";
       if (type.toUpperCase() === "XP") return `Earn ${threshold} XP`;
-      if (type.toUpperCase() === "POINTS") return `Earn ${threshold} points`;
-      if (type.toUpperCase() === "COMPLETED_CHALLENGES") return `Complete ${threshold} challenges`;
+      if (type.toUpperCase() === "POINTS") return `Earn ${threshold} pts`;
+      if (type.toUpperCase() === "COMPLETED_CHALLENGES") return `Complete ${threshold} tasks`;
       return `Reach target threshold`;
     } catch {
       return "Special award";
@@ -232,16 +232,16 @@ export function GamificationClient({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Toast Feedback */}
       {feedbackMessage && (
         <div
           className={`fixed bottom-5 right-5 z-50 px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border animate-in fade-in slide-in-from-bottom-5 duration-200 ${
             feedbackMessage.type === "success"
-              ? "bg-emerald-900 border-emerald-800 text-white"
+              ? "bg-slate-900 border-slate-800 text-white"
               : feedbackMessage.type === "badge"
-              ? "bg-amber-900 border-amber-800 text-white"
-              : "bg-red-900 border-red-800 text-white"
+              ? "bg-amber-900 border-amber-800 text-white animate-bounce"
+              : "bg-red-950 border-red-800 text-white"
           }`}
         >
           <Trophy className={`h-6 w-6 shrink-0 ${feedbackMessage.type === "badge" ? "text-amber-400" : "text-slate-100"}`} />
@@ -250,19 +250,19 @@ export function GamificationClient({
       )}
 
       {/* Viewing context bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white border border-slate-100 p-4 rounded-2xl shadow-sm">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white border border-slate-100 p-5 rounded-2xl shadow-sm">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Viewing Persona</span>
-          <h2 className="text-base font-semibold text-slate-900">
-            Current Operator: {activeEmployee?.name} ({activeEmployee?.department.name})
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">DEMO CONTEXT SELECTOR</span>
+          <h2 className="text-base font-bold text-slate-900">
+            Active Employee: {activeEmployee?.name} ({activeEmployee?.department.name})
           </h2>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-500 hidden md:inline">Change employee context:</span>
+          <span className="text-xs text-slate-500 font-semibold hidden md:inline">Acting as:</span>
           <Select
             value={selectedEmployeeId}
             onChange={(e) => setSelectedEmployeeId(Number(e.target.value))}
-            className="w-full sm:w-56 bg-slate-50 border-slate-200"
+            className="w-full sm:w-56 bg-slate-50 border-slate-200 text-xs font-semibold rounded-xl"
           >
             {employees.map((emp) => (
               <option key={emp.id} value={emp.id}>
@@ -273,63 +273,63 @@ export function GamificationClient({
         </div>
       </div>
 
-      {/* Summary grid */}
-      <section className="grid gap-4 md:grid-cols-3">
-        <Card className="shadow-sm bg-white">
+      {/* Summary metrics grid */}
+      <section className="grid gap-5 md:grid-cols-3">
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total XP Balance</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">XP Balance</p>
               <p className="mt-2 text-3xl font-black text-slate-900">{activeEmployee?.xp ?? 0} XP</p>
             </div>
-            <div className="p-3 bg-amber-50 rounded-2xl text-amber-600">
-              <Star className="h-6 w-6 fill-amber-500 text-amber-500" />
+            <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-100/60 text-amber-600">
+              <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm bg-white">
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Redeemable Points</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Redeemable Points</p>
               <p className="mt-2 text-3xl font-black text-slate-900">{activeEmployee?.points ?? 0} pts</p>
             </div>
-            <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
-              <Award className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100/60 text-blue-600">
+              <Award className="h-5 w-5 text-blue-600" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm bg-white">
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Badges Unlocked</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Badges Collection</p>
               <p className="mt-2 text-3xl font-black text-slate-900">
-                {employeeBadges.filter((b) => b.employeeId === selectedEmployeeId).length} / {badges.length}
+                {employeeBadges.filter((b) => b.employeeId === selectedEmployeeId).length} <span className="text-slate-400 font-bold text-lg">/ {badges.length}</span>
               </p>
             </div>
-            <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600">
-              <Trophy className="h-6 w-6 text-emerald-600" />
+            <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100/60 text-emerald-600">
+              <Trophy className="h-5 w-5 text-emerald-600" />
             </div>
           </CardContent>
         </Card>
       </section>
 
-      {/* Main Grid */}
+      {/* Main Content Grid */}
       <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
         
-        {/* Challenges Console */}
-        <Card className="shadow-sm bg-white">
-          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Challenges console (Clean card layout, no left border) */}
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-3">
             <div>
-              <CardTitle>Challenges Console</CardTitle>
-              <CardDescription>Join collective tasks, contribute, and earn XP rewards.</CardDescription>
+              <CardTitle className="text-base font-bold">Challenges Console</CardTitle>
+              <CardDescription className="text-xs">Complete core milestones and tasks to gain points & badges.</CardDescription>
             </div>
-            <div className="flex border border-slate-100 rounded-xl overflow-hidden shrink-0">
+            <div className="flex border border-slate-200 rounded-xl overflow-hidden shrink-0">
               {["Active", "Completed", "Draft"].map((status) => (
                 <button
                   key={status}
                   onClick={() => setChallengeFilter(status)}
-                  className={`px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                  className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
                     challengeFilter === status
                       ? "bg-slate-900 text-white"
                       : "bg-slate-50 text-slate-500 hover:bg-slate-100"
@@ -342,12 +342,11 @@ export function GamificationClient({
           </CardHeader>
           <CardContent className="space-y-4">
             {challenges.filter((c) => c.status === challengeFilter).length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-8">No challenges found under this status filter.</p>
+              <p className="text-xs text-slate-400 text-center py-10">No challenges found under this category filter.</p>
             ) : (
               challenges
                 .filter((c) => c.status === challengeFilter)
                 .map((challenge) => {
-                  // Find if employee is participating
                   const userPart = participations.find(
                     (p) => p.challengeId === challenge.id && p.employeeId === selectedEmployeeId
                   );
@@ -355,69 +354,66 @@ export function GamificationClient({
                   return (
                     <div
                       key={challenge.id}
-                      className="border border-slate-100 rounded-2xl bg-white p-5 hover:border-slate-200 transition-all"
+                      className="border border-slate-100 rounded-2xl bg-white p-5 hover:border-slate-200 transition-all shadow-sm"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Badge className="bg-emerald-50 text-emerald-800 border-emerald-100 text-[10px] font-bold uppercase">
+                            <Badge variant="outline" className="text-emerald-800 border-emerald-200 bg-emerald-50/20 text-[9px] font-bold uppercase">
                               {challenge.category.name}
                             </Badge>
-                            <Badge className="bg-slate-50 text-slate-700 border-slate-100 text-[10px] font-bold uppercase">
+                            <Badge variant="outline" className="text-slate-600 border-slate-200 text-[9px] font-bold uppercase">
                               {challenge.difficulty}
                             </Badge>
                           </div>
-                          <h4 className="text-base font-bold text-slate-900 pt-1">{challenge.title}</h4>
-                          <p className="text-sm text-slate-500">{challenge.description}</p>
-                          <span className="inline-block text-xs text-slate-400">
-                            Deadline: {new Date(challenge.deadline).toLocaleDateString()}
+                          <h4 className="text-base font-bold text-slate-900">{challenge.title}</h4>
+                          <p className="text-xs text-slate-500 font-medium">{challenge.description}</p>
+                          <span className="inline-block text-[10px] text-slate-400 font-bold">
+                            End Date: {new Date(challenge.deadline).toLocaleDateString()}
                           </span>
                         </div>
 
                         <div className="shrink-0 flex items-center gap-3">
                           {userPart ? (
                             userPart.progress >= 100 ? (
-                              <div className="flex items-center gap-1.5 text-emerald-600 font-semibold text-sm">
+                              <div className="flex items-center gap-1 text-emerald-600 font-bold text-xs">
                                 <CheckCircle2 className="h-4 w-4" />
                                 <span>Completed</span>
                               </div>
                             ) : (
-                              <div className="flex flex-col items-end gap-2">
-                                <span className="text-xs font-semibold text-slate-400">Joined · In Progress</span>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleCompleteChallenge(userPart.id)}
-                                  className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-4"
-                                >
-                                  Complete Challenge
-                                </Button>
-                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => handleCompleteChallenge(userPart.id)}
+                                className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold px-3 h-8"
+                              >
+                                Complete Task
+                              </Button>
                             )
                           ) : (
                             challenge.status === "Active" && (
                               <Button
                                 size="sm"
                                 onClick={() => handleJoinChallenge(challenge.id)}
-                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-4"
+                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold px-3 h-8"
                               >
-                                Join Challenge
+                                Join Task
                               </Button>
                             )
                           )}
-                          <div className="flex flex-col items-center border border-slate-100 rounded-xl px-3 py-2 bg-slate-50">
-                            <span className="text-xs font-bold text-amber-600">{challenge.xp}</span>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase">XP</span>
+                          <div className="flex flex-col items-center border border-slate-100 rounded-xl px-2.5 py-1.5 bg-slate-50">
+                            <span className="text-xs font-black text-amber-600">{challenge.xp}</span>
+                            <span className="text-[9px] text-slate-400 font-bold uppercase">XP</span>
                           </div>
                         </div>
                       </div>
 
                       {userPart && userPart.progress < 100 && (
                         <div className="mt-4 space-y-1.5">
-                          <div className="flex justify-between text-xs text-slate-400">
-                            <span>Your current progress</span>
+                          <div className="flex justify-between text-[10px] text-slate-400 font-bold uppercase">
+                            <span>TASK PROGRESS</span>
                             <span>{userPart.progress}%</span>
                           </div>
-                          <Progress value={userPart.progress} className="h-1.5 bg-slate-100 [&>div]:bg-emerald-600" />
+                          <Progress value={userPart.progress} className="h-1 bg-slate-100 [&>div]:bg-emerald-600" />
                         </div>
                       )}
                     </div>
@@ -427,15 +423,15 @@ export function GamificationClient({
           </CardContent>
         </Card>
 
-        {/* Leaderboard */}
-        <Card className="shadow-sm bg-white">
+        {/* Leaderboard Section (Clean rows, no left shading) */}
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle>ESG Leaderboard</CardTitle>
-              <div className="flex border border-slate-100 rounded-xl overflow-hidden shrink-0">
+              <CardTitle className="text-base font-bold">Leaderboard Standings</CardTitle>
+              <div className="flex border border-slate-200 rounded-xl overflow-hidden shrink-0">
                 <button
                   onClick={() => setLeaderboardTab("employees")}
-                  className={`px-3 py-1 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                  className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                     leaderboardTab === "employees" ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-500"
                   }`}
                 >
@@ -443,23 +439,23 @@ export function GamificationClient({
                 </button>
                 <button
                   onClick={() => setLeaderboardTab("departments")}
-                  className={`px-3 py-1 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                  className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                     leaderboardTab === "departments" ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-500"
                   }`}
                 >
-                  Departments
+                  Depts
                 </button>
               </div>
             </div>
-            <CardDescription>
+            <CardDescription className="text-xs">
               {leaderboardTab === "employees"
-                ? "Ranked employee scorecard based on accumulated platform XP."
-                : "Ranked organizational score breakdown based on combined ESG factors."}
+                ? "Ranked by employee XP contribution balance."
+                : "Ranked by department ESG scoring indices."}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {leaderboardTab === "employees" ? (
-              <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
                 {employees
                   .sort((a, b) => b.xp - a.xp)
                   .map((employee, idx) => {
@@ -469,13 +465,13 @@ export function GamificationClient({
                         key={employee.id}
                         className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
                           isSelf
-                            ? "border-emerald-500 bg-emerald-50/50 shadow-sm"
-                            : "border-slate-100 bg-slate-50/50 hover:bg-slate-100/50"
+                            ? "border-emerald-500 bg-emerald-50/10 shadow-sm"
+                            : "border-slate-100 bg-white hover:border-slate-200"
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <span
-                            className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-extrabold ${
+                            className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-black ${
                               idx === 0
                                 ? "bg-amber-100 text-amber-800"
                                 : idx === 1
@@ -488,15 +484,15 @@ export function GamificationClient({
                             {idx + 1}
                           </span>
                           <div>
-                            <p className="text-sm font-bold text-slate-900">
-                              {employee.name} {isSelf && <span className="text-emerald-700 text-xs">(You)</span>}
+                            <p className="text-xs font-bold text-slate-900">
+                              {employee.name} {isSelf && <span className="text-emerald-700 text-[10px]">(You)</span>}
                             </p>
-                            <p className="text-xs text-slate-400">{employee.department.name}</p>
+                            <p className="text-[10px] text-slate-400 font-semibold">{employee.department.name}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-slate-800">{employee.xp} XP</p>
-                          <p className="text-[10px] text-slate-400 font-semibold">{employee.points} pts</p>
+                          <p className="text-xs font-bold text-slate-800">{employee.xp} XP</p>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase">{employee.points} pts</p>
                         </div>
                       </div>
                     );
@@ -513,23 +509,23 @@ export function GamificationClient({
                         key={dept.id}
                         className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
                           isSelfDept
-                            ? "border-blue-500 bg-blue-50/30"
-                            : "border-slate-100 bg-slate-50/50 hover:bg-slate-100/50"
+                            ? "border-blue-500 bg-blue-50/10"
+                            : "border-slate-100 bg-white hover:border-slate-200"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <span className="h-6 w-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-extrabold">
+                          <span className="h-5 w-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-black">
                             {idx + 1}
                           </span>
                           <div>
-                            <p className="text-sm font-bold text-slate-900">
-                              {dept.name} Department {isSelfDept && <span className="text-blue-700 text-xs">(Yours)</span>}
+                            <p className="text-xs font-bold text-slate-900">
+                              {dept.name} Department {isSelfDept && <span className="text-blue-700 text-[10px]">(Yours)</span>}
                             </p>
-                            <p className="text-xs text-slate-400">Total ESG Score</p>
+                            <p className="text-[10px] text-slate-400 font-semibold">Weighted ESG score index</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-extrabold text-slate-800">{dept.totalScore.toFixed(1)} / 100</p>
+                          <p className="text-xs font-black text-slate-800">{dept.totalScore.toFixed(1)} / 100</p>
                         </div>
                       </div>
                     );
@@ -540,16 +536,16 @@ export function GamificationClient({
         </Card>
       </div>
 
-      <Separator />
+      <Separator className="bg-slate-100" />
 
-      {/* Badges Gallery & Rewards Catalog */}
+      {/* Showcase and Catalog Grid */}
       <div className="grid gap-6 xl:grid-cols-[1.1fr_1.9fr]">
         
-        {/* Badges Gallery */}
-        <Card className="shadow-sm bg-white">
+        {/* Badges showcase */}
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
           <CardHeader>
-            <CardTitle>Badge Showcase</CardTitle>
-            <CardDescription>Earn achievements by reaching ESG goals, challenges, and milestones.</CardDescription>
+            <CardTitle className="text-base font-bold">Showcase Badges</CardTitle>
+            <CardDescription className="text-xs">Achievements and certificates unlocked by active operator.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             {badges.map((badge) => {
@@ -562,28 +558,28 @@ export function GamificationClient({
                   key={badge.id}
                   className={`border rounded-2xl p-4 flex flex-col items-center text-center transition-all ${
                     isUnlocked
-                      ? "border-amber-200 bg-amber-50/20 shadow-sm"
-                      : "border-slate-100 bg-slate-50/20 opacity-60"
+                      ? "border-amber-200 bg-amber-50/5 shadow-sm animate-in fade-in"
+                      : "border-slate-100 bg-slate-50/10 opacity-50"
                   }`}
                 >
                   <div
-                    className={`h-12 w-12 rounded-2xl flex items-center justify-center border mb-3 ${
+                    className={`h-11 w-11 rounded-full flex items-center justify-center border mb-3 ${
                       isUnlocked
                         ? "bg-amber-100 border-amber-200 text-amber-700"
-                        : "bg-slate-100 border-slate-200 text-slate-400"
+                        : "bg-slate-100/60 border-slate-200 text-slate-400"
                     }`}
                   >
                     {isUnlocked ? (
-                      <Trophy className="h-6 w-6 fill-amber-500/20" />
+                      <Trophy className="h-5 w-5 fill-amber-500/10" />
                     ) : (
-                      <Lock className="h-5 w-5" />
+                      <Lock className="h-4 w-4" />
                     )}
                   </div>
-                  <p className="text-sm font-bold text-slate-900">{badge.name}</p>
-                  <p className="text-xs text-slate-400 mt-1 max-w-[120px] leading-tight">
+                  <p className="text-xs font-bold text-slate-900">{badge.name}</p>
+                  <p className="text-[10px] text-slate-400 mt-1 max-w-[125px] leading-tight font-medium">
                     {badge.description}
                   </p>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-2.5">
+                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-3 bg-slate-100 px-2 py-0.5 rounded-full">
                     {getBadgeRuleText(badge.unlockRule)}
                   </span>
                 </div>
@@ -593,10 +589,10 @@ export function GamificationClient({
         </Card>
 
         {/* Rewards Catalog */}
-        <Card className="shadow-sm bg-white">
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
           <CardHeader>
-            <CardTitle>Rewards and Perks</CardTitle>
-            <CardDescription>Redeem accumulated points for gift cards, sustainability gear, or corporate perks.</CardDescription>
+            <CardTitle className="text-base font-bold">Perks Redemption Catalog</CardTitle>
+            <CardDescription className="text-xs">Redeem voucher coupon codes or sustainability perks using points.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             {rewards.map((reward) => {
@@ -606,37 +602,37 @@ export function GamificationClient({
               return (
                 <div
                   key={reward.id}
-                  className="border border-slate-100 rounded-2xl bg-white p-5 flex flex-col justify-between hover:border-slate-200 transition-all"
+                  className="border border-slate-100 rounded-2xl bg-white p-5 flex flex-col justify-between hover:border-slate-200 transition-all shadow-sm"
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <div className="flex justify-between items-start gap-2">
-                      <h4 className="text-base font-bold text-slate-900">{reward.name}</h4>
-                      <Badge className="bg-blue-50 text-blue-800 border-blue-100 text-xs font-bold whitespace-nowrap">
+                      <h4 className="text-sm font-bold text-slate-900 leading-tight">{reward.name}</h4>
+                      <Badge variant="outline" className="text-blue-800 border-blue-200 bg-blue-50/20 text-[10px] font-bold whitespace-nowrap">
                         {reward.pointsRequired} pts
                       </Badge>
                     </div>
-                    <p className="text-sm text-slate-500 pr-2">{reward.description}</p>
-                    <span className="inline-block text-[11px] font-semibold text-slate-400 pt-1">
-                      Available Stock: {reward.stock} left
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed">{reward.description}</p>
+                    <span className="inline-block text-[10px] font-bold text-slate-400 uppercase">
+                      Stock: {reward.stock} remaining
                     </span>
                   </div>
 
                   <div className="mt-4 pt-2">
                     {isOutOfStock ? (
-                      <Button disabled className="w-full rounded-xl bg-slate-100 text-slate-400 border border-slate-100 cursor-not-allowed">
-                        Out of Stock
+                      <Button disabled className="w-full rounded-xl bg-slate-50 text-slate-400 border border-slate-100 text-xs h-9 cursor-not-allowed font-bold">
+                        Sold Out
                       </Button>
                     ) : hasEnoughPoints ? (
                       <Button
                         onClick={() => handleRedeemReward(reward.id)}
-                        className="w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white"
+                        className="w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold h-9"
                       >
-                        Redeem Reward
+                        Redeem Voucher
                       </Button>
                     ) : (
                       <Button
                         disabled
-                        className="w-full rounded-xl bg-slate-100 text-slate-400 border border-slate-100 cursor-not-allowed"
+                        className="w-full rounded-xl bg-slate-50 text-slate-400 border border-slate-100 text-[10px] h-9 cursor-not-allowed font-bold"
                       >
                         Requires {reward.pointsRequired} pts (You have {activeEmployee?.points})
                       </Button>

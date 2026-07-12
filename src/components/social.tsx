@@ -50,10 +50,10 @@ export function SocialClient({ employees, activities, participations: initialPar
 
   const activeEmployee = employees.find((e) => e.id === selectedEmployeeId);
 
-  // Compute simple Diversity / Social Stats
+  // Compute stats
   const approvedCount = participations.filter((p) => p.approvalStatus === "Approved").length;
   const uniqueVolunteers = new Set(participations.filter((p) => p.approvalStatus === "Approved").map((p) => p.employeeId)).size;
-  const totalServiceHours = approvedCount * 4; // Assume 4 hours per CSR activity
+  const totalServiceHours = approvedCount * 4;
 
   const triggerFeedback = (text: string, type: "success" | "error") => {
     setFeedback({ text, type });
@@ -73,7 +73,6 @@ export function SocialClient({ employees, activities, participations: initialPar
       });
       const data = await response.json();
       if (response.ok) {
-        // Prepend new record locally
         const freshPart: Participation = {
           ...data,
           employee: {
@@ -86,7 +85,7 @@ export function SocialClient({ employees, activities, participations: initialPar
           }
         };
         setParticipations([freshPart, ...participations]);
-        triggerFeedback("Joined CSR Activity successfully! Submission added to approval queue.", "success");
+        triggerFeedback("Successfully signed up for CSR activity!", "success");
         setProofUrl("");
         router.refresh();
       } else {
@@ -112,12 +111,12 @@ export function SocialClient({ employees, activities, participations: initialPar
           )
         );
         triggerFeedback(
-          action === "approve" ? "Participation approved! Points and XP awarded." : "Participation rejected.",
+          action === "approve" ? "Approved and points awarded!" : "Participation request rejected.",
           "success"
         );
         router.refresh();
       } else {
-        triggerFeedback(data.reason || data.error || "Action blocked by business rules.", "error");
+        triggerFeedback(data.reason || data.error || "Action blocked by validation rules.", "error");
       }
     } catch {
       triggerFeedback("Network error occurred.", "error");
@@ -125,33 +124,33 @@ export function SocialClient({ employees, activities, participations: initialPar
   };
 
   return (
-    <div className="space-y-8">
-      {/* Toast alert */}
+    <div className="space-y-8 font-sans">
+      {/* Toast feedback */}
       {feedback && (
         <div
           className={`fixed bottom-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border animate-in fade-in slide-in-from-bottom-5 ${
-            feedback.type === "success" ? "bg-emerald-900 border-emerald-800 text-white" : "bg-red-900 border-red-800 text-white"
+            feedback.type === "success" ? "bg-slate-900 border-slate-800 text-white" : "bg-red-900 border-red-800 text-white"
           }`}
         >
-          {feedback.type === "success" ? <CheckCircle2 className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
+          {feedback.type === "success" ? <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" /> : <AlertCircle className="h-5 w-5 text-red-400 shrink-0" />}
           <span className="text-sm font-semibold">{feedback.text}</span>
         </div>
       )}
 
-      {/* Viewing persona selector */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white border border-slate-100 p-4 rounded-2xl shadow-sm">
+      {/* Viewing context bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white border border-slate-100 p-5 rounded-2xl shadow-sm">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Viewing Persona</span>
-          <h2 className="text-base font-semibold text-slate-900">
-            Current Employee: {activeEmployee?.name} ({activeEmployee?.department.name})
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">DEMO CONTEXT SELECTOR</span>
+          <h2 className="text-base font-bold text-slate-900">
+            Active Employee: {activeEmployee?.name} ({activeEmployee?.department.name})
           </h2>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-500 hidden md:inline">Change employee:</span>
+          <span className="text-xs text-slate-500 font-semibold hidden md:inline">Acting as:</span>
           <Select
             value={selectedEmployeeId}
             onChange={(e) => setSelectedEmployeeId(Number(e.target.value))}
-            className="w-full sm:w-56 bg-slate-50 border-slate-200"
+            className="w-full sm:w-56 bg-slate-50 border-slate-200 text-xs font-semibold rounded-xl"
           >
             {employees.map((emp) => (
               <option key={emp.id} value={emp.id}>
@@ -162,65 +161,65 @@ export function SocialClient({ employees, activities, participations: initialPar
         </div>
       </div>
 
-      {/* Social / Diversity Dashboard */}
-      <section className="grid gap-4 md:grid-cols-3">
-        <Card className="shadow-sm bg-white">
+      {/* Stats summary grid */}
+      <section className="grid gap-5 md:grid-cols-3">
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Volunteer Headcount</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Volunteer Headcount</p>
               <p className="mt-2 text-3xl font-black text-slate-900">{uniqueVolunteers} employees</p>
             </div>
-            <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
-              <Users className="h-6 w-6" />
+            <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100/60 text-blue-600">
+              <Users className="h-5 w-5" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm bg-white">
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Hours of Service Logged</p>
-              <p className="mt-2 text-3xl font-black text-slate-900">{totalServiceHours} hours</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Service Hours Logged</p>
+              <p className="mt-2 text-3xl font-black text-slate-900">{totalServiceHours} hrs</p>
             </div>
-            <div className="p-3 bg-red-50 rounded-2xl text-red-600">
-              <Heart className="h-6 w-6" />
+            <div className="p-3 bg-red-50/60 rounded-xl border border-red-100/60 text-red-600">
+              <Heart className="h-5 w-5" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm bg-white">
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Diversity Index (Gender)</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Diversity Index (Gender)</p>
               <p className="mt-2 text-3xl font-black text-slate-900">38.5% ratio</p>
             </div>
-            <div className="p-3 bg-violet-50 rounded-2xl text-violet-600">
-              <Sparkles className="h-6 w-6" />
+            <div className="p-3 bg-violet-50/60 rounded-xl border border-violet-100/60 text-violet-600">
+              <Sparkles className="h-5 w-5" />
             </div>
           </CardContent>
         </Card>
       </section>
 
       {/* CSR Activity Grid */}
-      <Card className="shadow-sm bg-white">
-        <CardHeader>
-          <CardTitle>CSR Activities Console</CardTitle>
-          <CardDescription>
-            Join active CSR activities. Provide a link to evidence (if required by organization policies).
+      <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-bold">CSR Activities Register</CardTitle>
+          <CardDescription className="text-xs">
+            Join environmental and social volunteering programs. Input verification proof link if required.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl max-w-xl space-y-3">
-            <span className="text-xs font-bold text-slate-400 uppercase">Step 1: Enter Evidence URL (optional/required)</span>
+          <div className="p-4 bg-white border border-slate-100 rounded-2xl max-w-xl space-y-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Volunteering Evidence Verification Link</span>
             <Input
               value={proofUrl}
               onChange={(e) => setProofUrl(e.target.value)}
-              placeholder="e.g., https://evidence-link.com/photo.jpg"
-              className="bg-white border-slate-200 rounded-xl"
+              placeholder="e.g. https://evidence-link.com/volunteer-photo.jpg"
+              className="bg-slate-50 border-slate-200 rounded-xl text-xs h-9"
             />
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2">
             {activities.map((activity) => {
               const joined = participations.some(
                 (p) => p.activityId === activity.id && p.employeeId === selectedEmployeeId
@@ -229,35 +228,35 @@ export function SocialClient({ employees, activities, participations: initialPar
               return (
                 <div
                   key={activity.id}
-                  className="border border-slate-100 rounded-2xl bg-white p-5 flex flex-col justify-between hover:border-slate-200 transition-all"
+                  className="border border-slate-100 rounded-2xl bg-white p-5 flex flex-col justify-between hover:border-slate-200 transition-all shadow-sm"
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <div className="flex justify-between items-start gap-2">
-                      <Badge className="bg-blue-50 text-blue-800 border-blue-100 text-[10px] font-bold uppercase">
+                      <Badge variant="outline" className="text-blue-800 border-blue-200 bg-blue-50/20 text-[9px] font-bold uppercase">
                         {activity.category.name}
                       </Badge>
-                      <Badge className={activity.evidenceRequired ? "bg-red-50 text-red-800 border-red-100 text-[10px] font-bold" : "bg-slate-50 text-slate-700 border-slate-100 text-[10px] font-bold"}>
-                        {activity.evidenceRequired ? "Proof Required" : "No Proof Required"}
+                      <Badge variant="outline" className={activity.evidenceRequired ? "text-red-800 border-red-200 bg-red-50/20 text-[9px]" : "text-slate-600 border-slate-200 bg-slate-50 text-[9px]"}>
+                        {activity.evidenceRequired ? "Proof Required" : "No Proof Needed"}
                       </Badge>
                     </div>
-                    <h4 className="text-base font-bold text-slate-900 pt-1">{activity.title}</h4>
-                    <p className="text-sm text-slate-500">{activity.description}</p>
-                    <span className="inline-block text-xs text-slate-400 pt-1">
+                    <h4 className="text-base font-bold text-slate-900 leading-tight">{activity.title}</h4>
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed">{activity.description}</p>
+                    <span className="inline-block text-[10px] text-slate-400 font-bold">
                       Event Date: {new Date(activity.date).toLocaleDateString()}
                     </span>
                   </div>
 
                   <div className="mt-4 pt-2">
                     {joined ? (
-                      <Button disabled className="w-full rounded-xl bg-slate-100 text-slate-400 border border-slate-100 cursor-not-allowed">
-                        Signed Up (Pending Review)
+                      <Button disabled className="w-full rounded-xl bg-slate-50 text-slate-400 border border-slate-100 text-xs h-9 cursor-not-allowed font-bold">
+                        Awaiting Verification approval
                       </Button>
                     ) : (
                       <Button
                         onClick={() => handleJoinCSR(activity.id, activity.title)}
-                        className="w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white"
+                        className="w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold h-9"
                       >
-                        Sign Up & Join
+                        Join Activity
                       </Button>
                     )}
                   </div>
@@ -269,11 +268,11 @@ export function SocialClient({ employees, activities, participations: initialPar
       </Card>
 
       {/* Participation Queue */}
-      <Card className="shadow-sm bg-white">
+      <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
         <CardHeader>
-          <CardTitle>CSR Participation Queue</CardTitle>
-          <CardDescription>
-            Approve or reject employee participation submissions. Blocked if evidence is missing and org policy requires it.
+          <CardTitle className="text-base font-bold">Participation Approvals queue</CardTitle>
+          <CardDescription className="text-xs">
+            Review submitted logs and award points. Strict checks verify proof links based on active policies.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -281,28 +280,28 @@ export function SocialClient({ employees, activities, participations: initialPar
             <Table>
               <TableHeader className="bg-slate-50/50">
                 <TableRow>
-                  <TableHead className="font-bold">Employee</TableHead>
-                  <TableHead className="font-bold">CSR Activity</TableHead>
-                  <TableHead className="font-bold">Evidence (Proof URL)</TableHead>
-                  <TableHead className="font-bold">Required</TableHead>
-                  <TableHead className="font-bold text-center">Status</TableHead>
-                  <TableHead className="font-bold text-right">Actions</TableHead>
+                  <TableHead className="font-bold text-xs">Employee</TableHead>
+                  <TableHead className="font-bold text-xs">CSR Activity</TableHead>
+                  <TableHead className="font-bold text-xs">Evidence URL</TableHead>
+                  <TableHead className="font-bold text-xs">Policy check</TableHead>
+                  <TableHead className="font-bold text-xs text-center">Status</TableHead>
+                  <TableHead className="font-bold text-xs text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {participations.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-slate-400 py-6">
-                      No participation entries found.
+                    <TableCell colSpan={6} className="text-center text-slate-400 py-6 text-xs font-medium">
+                      No signups logged.
                     </TableCell>
                   </TableRow>
                 ) : (
                   participations.map((part) => (
-                    <TableRow key={part.id} className="hover:bg-slate-50/50">
+                    <TableRow key={part.id} className="hover:bg-slate-50/50 text-xs">
                       <TableCell className="font-bold text-slate-800">
                         <div>
                           <p>{part.employee.name}</p>
-                          <p className="text-[10px] text-slate-400 font-semibold">{part.employee.department.name}</p>
+                          <p className="text-[9px] text-slate-400 font-semibold">{part.employee.department.name}</p>
                         </div>
                       </TableCell>
                       <TableCell className="font-semibold text-slate-700">{part.activity.title}</TableCell>
@@ -312,22 +311,22 @@ export function SocialClient({ employees, activities, participations: initialPar
                             href={part.proofUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-blue-600 underline font-medium hover:text-blue-800 break-all"
+                            className="text-blue-600 underline font-semibold hover:text-blue-800 truncate block max-w-[130px]"
                           >
                             {part.proofUrl}
                           </a>
                         ) : (
-                          <span className="text-xs text-slate-400 italic">None attached</span>
+                          <span className="text-slate-400 italic">None</span>
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge className={part.activity.evidenceRequired ? "bg-amber-50 text-amber-800 border-amber-100 text-[10px]" : "bg-slate-50 text-slate-600 border-slate-100 text-[10px]"}>
-                          {part.activity.evidenceRequired ? "YES" : "NO"}
+                        <Badge variant="outline" className={part.activity.evidenceRequired ? "text-amber-800 border-amber-200 bg-amber-50/10 text-[9px]" : "text-slate-600 border-slate-200 text-[9px]"}>
+                          {part.activity.evidenceRequired ? "Proof Required" : "Optional"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge
-                          className={`text-[10px] font-bold ${
+                          className={`text-[9px] font-bold ${
                             part.approvalStatus === "Approved"
                               ? "bg-emerald-50 text-emerald-800 border-emerald-100"
                               : part.approvalStatus === "Pending"
@@ -344,7 +343,7 @@ export function SocialClient({ employees, activities, participations: initialPar
                             <Button
                               size="sm"
                               onClick={() => handleProcessApproval(part.id, "approve")}
-                              className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-3 py-1 h-8 text-xs font-semibold"
+                              className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-3.5 py-1 h-8 text-xs font-semibold"
                             >
                               Approve
                             </Button>
@@ -352,7 +351,7 @@ export function SocialClient({ employees, activities, participations: initialPar
                               size="sm"
                               variant="destructive"
                               onClick={() => handleProcessApproval(part.id, "reject")}
-                              className="rounded-lg px-3 py-1 h-8 text-xs font-semibold"
+                              className="rounded-lg px-3.5 py-1 h-8 text-xs font-semibold"
                             >
                               Reject
                             </Button>

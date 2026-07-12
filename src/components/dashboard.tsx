@@ -23,10 +23,10 @@ type DashboardProps = {
 };
 
 const cardConfig = [
-  { label: "Environmental", value: "environmental", accent: "border-l-4 border-emerald-500", icon: Leaf, bgIcon: "text-emerald-100" },
-  { label: "Social", value: "social", accent: "border-l-4 border-blue-500", icon: Users, bgIcon: "text-blue-100" },
-  { label: "Governance", value: "governance", accent: "border-l-4 border-violet-500", icon: ShieldAlert, bgIcon: "text-violet-100" },
-  { label: "Overall Score", value: "overall", accent: "border-l-4 border-amber-500", icon: Sparkles, bgIcon: "text-amber-100" }
+  { label: "Environmental Score", value: "environmental", icon: Leaf, colorClass: "text-emerald-600 bg-emerald-50/60 border-emerald-100" },
+  { label: "Social Score", value: "social", icon: Users, colorClass: "text-blue-600 bg-blue-50/60 border-blue-100" },
+  { label: "Governance Score", value: "governance", icon: ShieldAlert, colorClass: "text-violet-600 bg-violet-50/60 border-violet-100" },
+  { label: "Overall Company Score", value: "overall", icon: Sparkles, colorClass: "text-amber-600 bg-amber-50/60 border-amber-100" }
 ] as const;
 
 export function DashboardClient({ metrics, trend, ranking, insights, activity, departments }: DashboardProps) {
@@ -66,32 +66,32 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
   };
 
   return (
-    <div className="space-y-8 relative">
+    <div className="space-y-8 relative font-sans">
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-emerald-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-emerald-700 animate-in fade-in slide-in-from-bottom-5">
-          <Sparkles className="h-5 w-5 text-amber-300" />
-          <span className="text-sm font-medium">{toastMessage}</span>
+        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-800 animate-in fade-in slide-in-from-bottom-5">
+          <Sparkles className="h-5 w-5 text-amber-400" />
+          <span className="text-sm font-semibold">{toastMessage}</span>
         </div>
       )}
 
       {/* Header filter banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white border border-slate-100 p-4 rounded-2xl shadow-sm">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white border border-slate-100 p-5 rounded-2xl shadow-sm">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Context Filter</span>
-          <h2 className="text-base font-semibold text-slate-900">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Context Scope</span>
+          <h2 className="text-lg font-bold text-slate-900">
             {selectedDeptId
-              ? `Currently viewing: ${departments.find((d) => d.id === selectedDeptId)?.name} Department`
-              : "Currently viewing: All Corporate Departments"}
+              ? `Operational Scope: ${departments.find((d) => d.id === selectedDeptId)?.name} Department`
+              : "Enterprise-wide ESG Standings"}
           </h2>
         </div>
         <div className="flex items-center gap-3">
           <Select
             value={selectedDeptId?.toString() ?? "all"}
             onChange={handleDepartmentChange}
-            className="w-full sm:w-56 bg-slate-50 border-slate-200"
+            className="w-full sm:w-56 bg-slate-50 border-slate-200 text-xs font-semibold rounded-xl"
           >
-            <option value="all">All Departments</option>
+            <option value="all">Entire Company</option>
             {departments.map((department) => (
               <option key={department.id} value={department.id}>
                 {department.name}
@@ -99,30 +99,30 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
             ))}
           </Select>
           {selectedDeptId && (
-            <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="text-slate-500">
-              Clear
+            <Button variant="ghost" size="sm" onClick={() => router.push("/")} className="text-slate-400 hover:text-slate-600 text-xs font-semibold">
+              Reset Scope
             </Button>
           )}
         </div>
       </div>
 
       {/* Score cards section */}
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {cardConfig.map((card) => {
           const score = metrics[card.value as keyof typeof metrics];
           const IconComponent = card.icon;
           return (
-            <Card key={card.value} className={`${card.accent} shadow-sm bg-white overflow-hidden relative group hover:shadow-md transition-all duration-200`}>
+            <Card key={card.value} className="shadow-sm border-slate-100 bg-white overflow-hidden relative group hover:shadow-md transition-all duration-200 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{card.label}</p>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-4xl font-extrabold tracking-tight text-slate-900">{score.toFixed(1)}</span>
-                      <span className="text-sm font-semibold text-slate-400">/100</span>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{card.label}</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-black tracking-tight text-slate-900">{score.toFixed(1)}</span>
+                      <span className="text-sm font-bold text-slate-400">/100</span>
                     </div>
                   </div>
-                  <div className={`p-2.5 rounded-xl bg-slate-50 ${card.bgIcon} transition-colors group-hover:bg-slate-100`}>
+                  <div className={`p-3 rounded-xl border ${card.colorClass} transition-all`}>
                     <IconComponent className="h-5 w-5" />
                   </div>
                 </div>
@@ -134,50 +134,53 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
 
       {/* Charts section */}
       <section className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
-        <Card className="shadow-sm border-slate-100 bg-white">
-          <CardHeader>
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
+          <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-emerald-700" />
-              <CardTitle>Emissions Trend</CardTitle>
+              <CardTitle className="text-base font-bold">Carbon Emissions Audit Ledger</CardTitle>
             </div>
-            <CardDescription>12-month carbon output (kg CO2) based on logged fuel, utilities, and material consumption.</CardDescription>
+            <CardDescription className="text-xs">12-month carbon output curve (kg CO2) derived from transactional utility consumption.</CardDescription>
           </CardHeader>
           <CardContent className="h-[340px] pr-4">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend} margin={{ left: 0, right: 8, top: 8, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} dy={8} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} dx={-8} />
+              <LineChart data={trend} margin={{ left: 0, right: 8, top: 12, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f8fafc" vertical={false} />
+                <XAxis dataKey="label" stroke="#94a3b8" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} dy={8} />
+                <YAxis stroke="#94a3b8" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} dx={-8} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", border: "none", color: "#fff" }}
+                  contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", border: "none", color: "#fff", fontFamily: "Inter, sans-serif" }}
                   labelStyle={{ fontWeight: "bold", color: "#94a3b8" }}
                 />
-                <Line type="monotone" dataKey="total" name="CO2 Output (kg)" stroke="#0F766E" strokeWidth={3} dot={{ stroke: "#0F766E", strokeWidth: 2, r: 4, fill: "#fff" }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="total" name="CO2 (kg)" stroke="#0F766E" strokeWidth={3} dot={{ stroke: "#0F766E", strokeWidth: 2, r: 4, fill: "#fff" }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Insights strip */}
-        <Card className="shadow-sm border-slate-100 bg-white flex flex-col justify-between">
+        {/* Insights strip (Clean redesign without shaded blocks) */}
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl flex flex-col justify-between">
           <div>
-            <CardHeader>
+            <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <HelpCircle className="h-5 w-5 text-emerald-700" />
-                <CardTitle>Platform Insights</CardTitle>
+                <CardTitle className="text-base font-bold">Platform Diagnostics & Insights</CardTitle>
               </div>
-              <CardDescription>Analyzed highlights compiled from recent activities and database rules.</CardDescription>
+              <CardDescription className="text-xs">Dynamic alerts computed from database rules, thresholds, and timelines.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {insights.map((insight) => {
-                let badgeColor = "bg-emerald-50 text-emerald-800 border-emerald-100";
-                if (insight.type === "danger") badgeColor = "bg-red-50 text-red-800 border-red-100";
-                if (insight.type === "warning") badgeColor = "bg-amber-50 text-amber-800 border-amber-100";
+                let dotColor = "bg-emerald-500";
+                if (insight.type === "danger") dotColor = "bg-red-500";
+                if (insight.type === "warning") dotColor = "bg-amber-500";
 
                 return (
-                  <div key={insight.id} className={`rounded-xl border p-4 transition-colors ${badgeColor}`}>
-                    <p className="text-xs font-bold uppercase tracking-wider mb-1">{insight.title}</p>
-                    <p className="text-sm font-medium">{insight.text}</p>
+                  <div key={insight.id} className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 hover:border-slate-200 transition-all flex items-start gap-3">
+                    <div className={`h-2.5 w-2.5 rounded-full mt-1 shrink-0 ${dotColor}`} />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">{insight.title}</p>
+                      <p className="text-sm font-semibold text-slate-700 leading-snug">{insight.text}</p>
+                    </div>
                   </div>
                 );
               })}
@@ -188,26 +191,22 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
 
       {/* Department Score & Activity section */}
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card className="shadow-sm border-slate-100 bg-white">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <CardTitle>Department ESG Standings</CardTitle>
-                <CardDescription>Click a bar to filter dashboard context to that specific department.</CardDescription>
-              </div>
-            </div>
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-bold">Department Score Rankings</CardTitle>
+            <CardDescription className="text-xs">Total ESG rankings. Click a bar to toggle operational scope to that specific department.</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={ranking} layout="vertical" margin={{ left: 16, right: 16 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                <XAxis type="number" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} width={100} />
+              <BarChart data={ranking} layout="vertical" margin={{ left: 16, right: 16, top: 12 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f8fafc" horizontal={false} />
+                <XAxis type="number" stroke="#94a3b8" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} />
+                <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} width={100} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", border: "none", color: "#fff" }}
+                  contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", border: "none", color: "#fff", fontFamily: "Inter, sans-serif" }}
                   labelStyle={{ fontWeight: "bold" }}
                 />
-                <Bar dataKey="totalScore" name="ESG Score" radius={[0, 8, 8, 0]} onClick={handleBarClick} cursor="pointer">
+                <Bar dataKey="totalScore" name="ESG Index" radius={[0, 6, 6, 0]} onClick={handleBarClick} cursor="pointer">
                   {ranking.map((entry, index) => {
                     const colors = ["#0F766E", "#2563EB", "#7C3AED", "#EA580C"];
                     return <Cell key={entry.id} fill={colors[index % colors.length]} />;
@@ -219,25 +218,25 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
         </Card>
 
         {/* Recent Activity Feed */}
-        <Card className="shadow-sm border-slate-100 bg-white flex flex-col justify-between">
-          <CardHeader>
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl flex flex-col justify-between">
+          <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-emerald-700" />
-              <CardTitle>Recent Activity</CardTitle>
+              <CardTitle className="text-base font-bold">Operations Audit Trail</CardTitle>
             </div>
-            <CardDescription>Live audit logs across ESG goals, challenges, and policies.</CardDescription>
+            <CardDescription className="text-xs">Live log of employee CSR entries, challenge completions, and audits.</CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto max-h-[300px] space-y-4 pr-1 scrollbar-hide">
+          <CardContent className="flex-1 overflow-y-auto max-h-[280px] space-y-4 pr-1 scrollbar-hide">
             {activity.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-6">No recent actions logged.</p>
+              <p className="text-xs text-slate-400 text-center py-8">No recent events logged.</p>
             ) : (
               activity.map((event) => (
                 <div key={event.id} className="flex gap-4 items-start border-b border-slate-50 pb-3 last:border-b-0 last:pb-0">
                   <div className="h-2 w-2 rounded-full bg-emerald-600 mt-1.5 shrink-0" />
                   <div className="space-y-0.5">
-                    <p className="text-sm font-semibold text-slate-800 leading-tight">{event.title}</p>
-                    <p className="text-xs text-slate-500">{event.detail}</p>
-                    <span className="text-[10px] font-semibold text-slate-400">{new Date(event.date).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                    <p className="text-xs font-bold text-slate-800 leading-tight">{event.title}</p>
+                    <p className="text-[11px] text-slate-500">{event.detail}</p>
+                    <span className="text-[10px] font-bold text-slate-400">{new Date(event.date).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                   </div>
                 </div>
               ))
@@ -247,19 +246,19 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
       </section>
 
       {/* Quick actions panel */}
-      <Card className="shadow-sm border-slate-100 bg-white">
+      <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Operational shortcuts for the ESG management demo chain.</CardDescription>
+          <CardTitle className="text-base font-bold">Operational Commands</CardTitle>
+          <CardDescription className="text-xs">Operational shortcuts for testing data flows and scoring.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <Button onClick={() => setCarbonFormOpen(true)} className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-5">
+          <Button onClick={() => setCarbonFormOpen(true)} className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-5 text-xs font-semibold h-9">
             Log Carbon Data
           </Button>
-          <Button variant="outline" asChild className="rounded-xl border-slate-200 hover:bg-slate-50">
+          <Button variant="outline" asChild className="rounded-xl border-slate-200 hover:bg-slate-50 text-xs font-semibold h-9">
             <Link href="/gamification">Start Challenge</Link>
           </Button>
-          <Button variant="outline" asChild className="rounded-xl border-slate-200 hover:bg-slate-50">
+          <Button variant="outline" asChild className="rounded-xl border-slate-200 hover:bg-slate-50 text-xs font-semibold h-9">
             <Link href="/reports">View Reports</Link>
           </Button>
         </CardContent>
@@ -267,22 +266,22 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
 
       {/* Log Carbon Modal */}
       {carbonFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-xl shadow-2xl border border-slate-100 bg-white rounded-3xl overflow-hidden animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-100">
+          <Card className="w-full max-w-lg shadow-2xl border border-slate-100 bg-white rounded-3xl overflow-hidden animate-in zoom-in-95 duration-150">
             <CardHeader className="bg-slate-50 border-b border-slate-100 p-6">
-              <CardTitle className="text-slate-900 text-xl font-bold">Log Carbon Transaction</CardTitle>
-              <CardDescription className="text-slate-500">
-                Calculates CO2 emissions based on the selected source type using live factors.
+              <CardTitle className="text-slate-900 text-lg font-bold">Log Carbon Transaction</CardTitle>
+              <CardDescription className="text-slate-500 text-xs">
+                Enter transactional inputs to calculate footprints automatically.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
-                <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-500 uppercase">
                   <span>Department</span>
                   <Select
                     value={carbonInput.departmentId}
                     onChange={(e) => setCarbonInput({ ...carbonInput, departmentId: Number(e.target.value) })}
-                    className="bg-slate-50 border-slate-200 rounded-xl"
+                    className="bg-slate-50 border-slate-200 rounded-xl text-xs h-9"
                   >
                     {departments.map((d) => (
                       <option key={d.id} value={d.id}>
@@ -291,12 +290,12 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
                     ))}
                   </Select>
                 </label>
-                <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-500 uppercase">
                   <span>Source Type</span>
                   <Select
                     value={carbonInput.sourceType}
                     onChange={(e) => setCarbonInput({ ...carbonInput, sourceType: e.target.value })}
-                    className="bg-slate-50 border-slate-200 rounded-xl"
+                    className="bg-slate-50 border-slate-200 rounded-xl text-xs h-9"
                   >
                     <option value="Diesel">Diesel</option>
                     <option value="Electricity">Electricity</option>
@@ -307,34 +306,34 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-500 uppercase">
                   <span>Quantity (units)</span>
                   <Input
                     type="number"
                     value={carbonInput.quantity}
                     onChange={(e) => setCarbonInput({ ...carbonInput, quantity: Number(e.target.value) })}
-                    className="bg-slate-50 border-slate-200 rounded-xl"
+                    className="bg-slate-50 border-slate-200 rounded-xl text-xs h-9 font-medium"
                     min={0}
                   />
                 </label>
-                <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+                <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-500 uppercase">
                   <span>Date</span>
                   <Input
                     type="date"
                     onChange={(e) => setCarbonInput({ ...carbonInput, date: new Date(e.target.value) })}
-                    className="bg-slate-50 border-slate-200 rounded-xl"
+                    className="bg-slate-50 border-slate-200 rounded-xl text-xs h-9 font-medium"
                   />
                 </label>
               </div>
 
               {emissionPreview && (
-                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-950 text-sm font-medium">
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-950 text-xs font-semibold">
                   {emissionPreview}
                 </div>
               )}
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button variant="outline" onClick={() => { setCarbonFormOpen(false); setEmissionPreview(""); }} className="rounded-xl border-slate-200">
+                <Button variant="outline" onClick={() => { setCarbonFormOpen(false); setEmissionPreview(""); }} className="rounded-xl border-slate-200 text-xs h-9">
                   Cancel
                 </Button>
                 <Button
@@ -358,7 +357,7 @@ export function DashboardClient({ metrics, trend, ranking, insights, activity, d
                       setEmissionPreview(`Error: ${e.message}`);
                     }
                   }}
-                  className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-5"
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-5 text-xs h-9"
                 >
                   Save Transaction
                 </Button>

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 
 type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & {
   tone?: "neutral" | "green" | "blue" | "violet" | "amber" | "red";
+  variant?: string;
 };
 
 const tones: Record<NonNullable<BadgeProps["tone"]>, string> = {
@@ -14,10 +15,14 @@ const tones: Record<NonNullable<BadgeProps["tone"]>, string> = {
   red: "bg-red-50 text-red-700 border-red-200"
 };
 
-export function Badge({ className, tone = "neutral", ...props }: BadgeProps) {
+export function Badge({ className, tone = "neutral", variant, ...props }: BadgeProps) {
   return (
     <span
-      className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium", tones[tone], className)}
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        tones[tone],
+        className
+      )}
       {...props}
     />
   );

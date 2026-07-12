@@ -47,7 +47,7 @@ type SettingsProps = {
 export function SettingsClient({ config, departments: initialDepartments, categories: initialCategories }: SettingsProps) {
   const router = useRouter();
 
-  // Local state lists
+  // Local lists state
   const [departments, setDepartments] = useState<Department[]>(initialDepartments);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
 
@@ -96,7 +96,7 @@ export function SettingsClient({ config, departments: initialDepartments, catego
       });
       const data = await response.json();
       if (response.ok) {
-        triggerFeedback("Configuration saved successfully! All department scores recalculated.", "success");
+        triggerFeedback("Configuration saved! All department scores recalculated.", "success");
         router.refresh();
       } else {
         triggerFeedback(data.error || "Failed to save configuration.", "error");
@@ -159,120 +159,120 @@ export function SettingsClient({ config, departments: initialDepartments, catego
   };
 
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="space-y-8 max-w-5xl font-sans">
       {/* Toast Alert */}
       {feedback && (
         <div
           className={`fixed bottom-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border animate-in fade-in slide-in-from-bottom-5 ${
-            feedback.type === "success" ? "bg-emerald-900 border-emerald-800 text-white" : "bg-red-900 border-red-800 text-white"
+            feedback.type === "success" ? "bg-slate-900 border-slate-800 text-white" : "bg-red-900 border-red-800 text-white"
           }`}
         >
-          {feedback.type === "success" ? <CheckCircle2 className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
+          {feedback.type === "success" ? <CheckCircle2 className="h-5 w-5 text-emerald-450 shrink-0" /> : <AlertTriangle className="h-5 w-5 text-red-450 shrink-0" />}
           <span className="text-sm font-semibold">{feedback.text}</span>
         </div>
       )}
 
       {/* Weighting and Config Toggles */}
-      <Card className="shadow-sm bg-white">
-        <CardHeader>
+      <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
+        <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Settings className="h-5 w-5 text-emerald-700" />
-            <CardTitle>Global ESG Configuration</CardTitle>
+            <CardTitle className="text-base font-bold">Global ESG Configuration</CardTitle>
           </div>
-          <CardDescription>
+          <CardDescription className="text-xs">
             Modify corporate ESG weight coefficients and operational automation rules.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSaveConfig} className="space-y-6">
             
-            {/* Weight sliders */}
+            {/* Weight inputs */}
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold text-slate-700">Recalculation Weights (Must sum to 100)</span>
-                <Badge className={isWeightsValid ? "bg-emerald-50 text-emerald-800 border-emerald-100" : "bg-red-50 text-red-800 border-red-100 animate-pulse"}>
+                <span className="text-xs font-bold text-slate-700">Coefficients Weights (Must sum to 100%)</span>
+                <Badge variant="outline" className={isWeightsValid ? "text-emerald-800 border-emerald-200 bg-emerald-50/20 text-[10px] font-bold" : "text-red-800 border-red-200 bg-red-50/20 text-[10px] font-bold animate-pulse"}>
                   Total: {weightSum}%
                 </Badge>
               </div>
               <div className="grid gap-6 md:grid-cols-3">
-                <label className="flex flex-col gap-2 text-xs font-semibold text-slate-500 uppercase">
+                <label className="flex flex-col gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   <span>Environmental weight (%)</span>
-                  <Input type="number" value={envWeight} onChange={(e) => setEnvWeight(Number(e.target.value))} className="bg-slate-50 border-slate-200 rounded-xl" min={0} max={100} />
+                  <Input type="number" value={envWeight} onChange={(e) => setEnvWeight(Number(e.target.value))} className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-9" min={0} max={100} />
                 </label>
-                <label className="flex flex-col gap-2 text-xs font-semibold text-slate-500 uppercase">
+                <label className="flex flex-col gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   <span>Social weight (%)</span>
-                  <Input type="number" value={socialWeight} onChange={(e) => setSocialWeight(Number(e.target.value))} className="bg-slate-50 border-slate-200 rounded-xl" min={0} max={100} />
+                  <Input type="number" value={socialWeight} onChange={(e) => setSocialWeight(Number(e.target.value))} className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-9" min={0} max={100} />
                 </label>
-                <label className="flex flex-col gap-2 text-xs font-semibold text-slate-500 uppercase">
+                <label className="flex flex-col gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   <span>Governance weight (%)</span>
-                  <Input type="number" value={govWeight} onChange={(e) => setGovWeight(Number(e.target.value))} className="bg-slate-50 border-slate-200 rounded-xl" min={0} max={100} />
+                  <Input type="number" value={govWeight} onChange={(e) => setGovWeight(Number(e.target.value))} className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-9" min={0} max={100} />
                 </label>
               </div>
             </div>
 
-            <Separator />
+            <Separator className="bg-slate-100" />
 
             {/* Automation Toggles */}
             <div className="space-y-4">
-              <span className="text-sm font-bold text-slate-700 block">Operational Rules Engine Toggles</span>
+              <span className="text-xs font-bold text-slate-700 block">Operational Rules Engine Toggles</span>
               <div className="grid gap-6 md:grid-cols-2">
-                <label className="flex flex-col gap-2 text-xs font-semibold text-slate-500 uppercase">
+                <label className="flex flex-col gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   <span>Auto Emission Calculator</span>
-                  <Select value={autoEmissionCalc ? "true" : "false"} onChange={(e) => setAutoEmissionCalc(e.target.value === "true")} className="bg-slate-50 border-slate-200 rounded-xl">
+                  <Select value={autoEmissionCalc ? "true" : "false"} onChange={(e) => setAutoEmissionCalc(e.target.value === "true")} className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-9">
                     <option value="true">ENABLED: Auto calculate CO2</option>
                     <option value="false">DISABLED: Require manual CO2 entry</option>
                   </Select>
                 </label>
-                <label className="flex flex-col gap-2 text-xs font-semibold text-slate-500 uppercase">
+                <label className="flex flex-col gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   <span>Evidence Required Policy</span>
-                  <Select value={evidenceRequired ? "true" : "false"} onChange={(e) => setEvidenceRequired(e.target.value === "true")} className="bg-slate-50 border-slate-200 rounded-xl">
+                  <Select value={evidenceRequired ? "true" : "false"} onChange={(e) => setEvidenceRequired(e.target.value === "true")} className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-9">
                     <option value="true">STRICT: Block approval without proof URLs</option>
                     <option value="false">FLEXIBLE: Allow approval without proof URLs</option>
                   </Select>
                 </label>
-                <label className="flex flex-col gap-2 text-xs font-semibold text-slate-500 uppercase">
+                <label className="flex flex-col gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   <span>Badge Auto-Award Toggles</span>
-                  <Select value={badgeAutoAward ? "true" : "false"} onChange={(e) => setBadgeAutoAward(e.target.value === "true")} className="bg-slate-50 border-slate-200 rounded-xl">
+                  <Select value={badgeAutoAward ? "true" : "false"} onChange={(e) => setBadgeAutoAward(e.target.value === "true")} className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-9">
                     <option value="true">AUTOMATIC: Unlock badges on threshold hits</option>
                     <option value="false">MANUAL: Hold badges for admin review</option>
                   </Select>
                 </label>
-                <label className="flex flex-col gap-2 text-xs font-semibold text-slate-500 uppercase">
+                <label className="flex flex-col gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   <span>System Email Alerts</span>
-                  <Select value={emailAlerts ? "true" : "false"} onChange={(e) => setEmailAlerts(e.target.value === "true")} className="bg-slate-50 border-slate-200 rounded-xl">
-                    <option value="true">ENABLED: Dispatch compliance email notifications</option>
+                  <Select value={emailAlerts ? "true" : "false"} onChange={(e) => setEmailAlerts(e.target.value === "true")} className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-9">
+                    <option value="true">ENABLED: Dispatch compliance alerts</option>
                     <option value="false">DISABLED: Log notifications silently</option>
                   </Select>
                 </label>
               </div>
             </div>
 
-            <Button type="submit" disabled={!isWeightsValid} className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-6">
-              Save ESG Configuration
+            <Button type="submit" disabled={!isWeightsValid} className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-5 text-xs font-semibold h-9">
+              Save Configuration Settings
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      {/* Departments & Categories lists */}
+      {/* Departments & Categories CRUD */}
       <div className="grid gap-6 md:grid-cols-2">
         
         {/* Departments CRUD */}
-        <Card className="shadow-sm bg-white">
-          <CardHeader>
-            <CardTitle>Departments Register</CardTitle>
-            <CardDescription>Track operational scopes, head counts, and manager heads.</CardDescription>
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-bold">Departments Register</CardTitle>
+            <CardDescription className="text-xs">Track operational scopes, head counts, and managers.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleAddDept} className="grid gap-3 p-4 bg-slate-50 border border-slate-100 rounded-2xl">
-              <span className="text-xs font-bold text-slate-400 uppercase">Register Department</span>
+          <CardContent className="space-y-6">
+            <form onSubmit={handleAddDept} className="grid gap-3 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Register Department</span>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input value={deptForm.name} onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })} placeholder="Dept Name" className="bg-white border-slate-200 rounded-lg text-xs h-9" />
-                <Input value={deptForm.code} onChange={(e) => setDeptForm({ ...deptForm, code: e.target.value })} placeholder="Code (e.g. MFG)" className="bg-white border-slate-200 rounded-lg text-xs h-9" />
+                <Input value={deptForm.name} onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })} placeholder="Dept Name" className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-medium" />
+                <Input value={deptForm.code} onChange={(e) => setDeptForm({ ...deptForm, code: e.target.value })} placeholder="Code (e.g. MFG)" className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-mono" />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input value={deptForm.head} onChange={(e) => setDeptForm({ ...deptForm, head: e.target.value })} placeholder="Head Director Name" className="bg-white border-slate-200 rounded-lg text-xs h-9" />
-                <Input type="number" value={deptForm.employeeCount || ""} onChange={(e) => setDeptForm({ ...deptForm, employeeCount: Number(e.target.value) })} placeholder="Employees count" className="bg-white border-slate-200 rounded-lg text-xs h-9" />
+                <Input value={deptForm.head} onChange={(e) => setDeptForm({ ...deptForm, head: e.target.value })} placeholder="Director Name" className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-medium" />
+                <Input type="number" value={deptForm.employeeCount || ""} onChange={(e) => setDeptForm({ ...deptForm, employeeCount: Number(e.target.value) })} placeholder="Employees count" className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-semibold" />
               </div>
               <Button type="submit" size="sm" className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg flex items-center gap-1 text-xs py-1.5 h-8 w-fit">
                 <Plus className="h-3.5 w-3.5" />
@@ -280,7 +280,7 @@ export function SettingsClient({ config, departments: initialDepartments, catego
               </Button>
             </form>
 
-            <div className="rounded-xl border border-slate-100 overflow-hidden max-h-[300px] overflow-y-auto">
+            <div className="rounded-xl border border-slate-100 overflow-hidden max-h-[250px] overflow-y-auto">
               <Table>
                 <TableHeader className="bg-slate-50/50">
                   <TableRow>
@@ -293,7 +293,7 @@ export function SettingsClient({ config, departments: initialDepartments, catego
                 <TableBody>
                   {departments.map((dept) => (
                     <TableRow key={dept.id} className="hover:bg-slate-50/30 text-xs">
-                      <TableCell className="font-bold text-slate-800">{dept.name}</TableCell>
+                      <TableCell className="font-bold text-slate-855">{dept.name}</TableCell>
                       <TableCell className="font-mono text-slate-500 font-bold">{dept.code}</TableCell>
                       <TableCell className="font-semibold text-slate-600">{dept.head}</TableCell>
                       <TableCell className="text-right font-extrabold text-slate-700">{dept.employeeCount}</TableCell>
@@ -306,17 +306,17 @@ export function SettingsClient({ config, departments: initialDepartments, catego
         </Card>
 
         {/* Categories CRUD */}
-        <Card className="shadow-sm bg-white">
-          <CardHeader>
-            <CardTitle>ESG Categories Register</CardTitle>
-            <CardDescription>Configure activities and challenges grouping tags.</CardDescription>
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-bold">ESG Categories Register</CardTitle>
+            <CardDescription className="text-xs">Configure activities and challenges grouping tags.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleAddCategory} className="grid gap-3 p-4 bg-slate-50 border border-slate-100 rounded-2xl">
-              <span className="text-xs font-bold text-slate-400 uppercase">Add ESG Category</span>
+          <CardContent className="space-y-6">
+            <form onSubmit={handleAddCategory} className="grid gap-3 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Add ESG Category</span>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} placeholder="Category Name" className="bg-white border-slate-200 rounded-lg text-xs h-9" />
-                <Select value={catForm.type} onChange={(e) => setCatForm({ ...catForm, type: e.target.value })} className="bg-white border-slate-200 rounded-lg text-xs h-9">
+                <Input value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} placeholder="Category Name" className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-medium" />
+                <Select value={catForm.type} onChange={(e) => setCatForm({ ...catForm, type: e.target.value })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-semibold">
                   <option value="CSR_ACTIVITY">CSR Activity</option>
                   <option value="CHALLENGE">Gamification Challenge</option>
                 </Select>
@@ -327,7 +327,7 @@ export function SettingsClient({ config, departments: initialDepartments, catego
               </Button>
             </form>
 
-            <div className="rounded-xl border border-slate-100 overflow-hidden max-h-[300px] overflow-y-auto">
+            <div className="rounded-xl border border-slate-100 overflow-hidden max-h-[250px] overflow-y-auto">
               <Table>
                 <TableHeader className="bg-slate-50/50">
                   <TableRow>
@@ -341,12 +341,12 @@ export function SettingsClient({ config, departments: initialDepartments, catego
                     <TableRow key={cat.id} className="hover:bg-slate-50/30 text-xs">
                       <TableCell className="font-bold text-slate-800">{cat.name}</TableCell>
                       <TableCell className="font-semibold text-slate-500">
-                        <Badge className="bg-slate-100 text-slate-700 border-slate-200 text-[10px]">
+                        <Badge variant="outline" className="text-slate-700 border-slate-200 bg-slate-50 text-[9px] font-bold">
                           {cat.type}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge className="bg-emerald-50 text-emerald-800 border-emerald-100 text-[10px]">
+                        <Badge className="bg-emerald-50 text-emerald-800 border-emerald-100 text-[9px] font-bold">
                           {cat.status}
                         </Badge>
                       </TableCell>
