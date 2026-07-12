@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/server/prisma";
 import { SettingsClient } from "@/components/settings";
 
