@@ -73,11 +73,13 @@ async function main() {
 
   await prisma.environmentalGoal.createMany({
     data: [
-      { name: "Reduce plant electricity intensity", departmentId: manufacturing.id, targetCO2: 1200, currentCO2: 960, deadline: monthsFromNow(2), status: "OnTrack" },
-      { name: "Cut fleet diesel use", departmentId: manufacturing.id, targetCO2: 800, currentCO2: 1025, deadline: daysAgo(18), status: "OffTrack" },
-      { name: "Lower delivery route emissions", departmentId: logistics.id, targetCO2: 640, currentCO2: 520, deadline: monthsFromNow(1), status: "OnTrack" },
-      { name: "Warehouse packaging reduction", departmentId: logistics.id, targetCO2: 380, currentCO2: 420, deadline: daysAgo(9), status: "OffTrack" },
-      { name: "Corporate travel carbon cap", departmentId: corporate.id, targetCO2: 200, currentCO2: 155, deadline: monthsFromNow(3), status: "OnTrack" }
+      { name: "Reduce plant electricity intensity", departmentId: manufacturing.id, targetCO2: 1200, currentCO2: 120, deadline: monthsFromNow(2), status: "OnTrack" },
+      { name: "Cut fleet diesel use", departmentId: manufacturing.id, targetCO2: 800, currentCO2: 840, deadline: daysAgo(18), status: "OffTrack" },
+      { name: "Minimize paper usage", departmentId: manufacturing.id, targetCO2: 500, currentCO2: 0, deadline: daysAgo(20), status: "Completed" },
+      { name: "Reduce water consumption", departmentId: manufacturing.id, targetCO2: 1000, currentCO2: 0, deadline: daysAgo(10), status: "Completed" },
+      { name: "Lower delivery route emissions", departmentId: logistics.id, targetCO2: 640, currentCO2: 96, deadline: monthsFromNow(1), status: "OnTrack" },
+      { name: "Warehouse packaging reduction", departmentId: logistics.id, targetCO2: 380, currentCO2: 38, deadline: monthsFromNow(1), status: "OnTrack" },
+      { name: "Corporate travel carbon cap", departmentId: corporate.id, targetCO2: 200, currentCO2: 20, deadline: monthsFromNow(3), status: "OnTrack" }
     ]
   });
 
@@ -114,20 +116,27 @@ async function main() {
       { title: "Supplier Sustainability Code", categoryId: categories[1].id, description: "Minimum ESG requirements for strategic suppliers.", effectiveDate: daysAgo(90), status: "Active" },
       { title: "Travel and Expense Policy", categoryId: categories[1].id, description: "Prefer rail and virtual meetings for short trips.", effectiveDate: daysAgo(60), status: "Active" },
       { title: "Workplace Inclusion Charter", categoryId: categories[0].id, description: "Guidance for respectful and inclusive workplaces.", effectiveDate: daysAgo(45), status: "Active" },
-      { title: "Energy Usage Standard", categoryId: categories[1].id, description: "Defines acceptable plant and office energy use practices.", effectiveDate: daysAgo(21), status: "Draft" }
+      { title: "Energy Usage Standard", categoryId: categories[1].id, description: "Defines acceptable plant and office energy use practices.", effectiveDate: daysAgo(21), status: "Active" }
     ]
   });
 
   const policies = await prisma.eSGPolicy.findMany({ orderBy: { id: "asc" } });
-  await prisma.policyAcknowledgement.createMany({
-    data: [
-      { employeeId: employees[0].id, policyId: policies[0].id, acknowledgedDate: daysAgo(50) },
-      { employeeId: employees[1].id, policyId: policies[0].id, acknowledgedDate: daysAgo(48) },
-      { employeeId: employees[3].id, policyId: policies[1].id, acknowledgedDate: daysAgo(30) },
-      { employeeId: employees[5].id, policyId: policies[2].id, acknowledgedDate: daysAgo(20) },
-      { employeeId: employees[6].id, policyId: policies[2].id, acknowledgedDate: daysAgo(18) }
-    ]
-  });
+  const acknowledgementsData: Array<{ employeeId: number; policyId: number; acknowledgedDate: Date }> = [];
+  
+  for (const emp of employees) {
+    for (const policy of policies) {
+      if (emp.id === employees[2].id && policy.id === policies[1].id) continue;
+      if (emp.id === employees[4].id && policy.id === policies[2].id) continue;
+      if (emp.id === employees[7].id && policy.id === policies[0].id) continue;
+
+      acknowledgementsData.push({
+        employeeId: emp.id,
+        policyId: policy.id,
+        acknowledgedDate: daysAgo(10 + Math.floor(Math.random() * 15))
+      });
+    }
+  }
+  await prisma.policyAcknowledgement.createMany({ data: acknowledgementsData });
 
   const transactionData = [
     { departmentId: manufacturing.id, sourceType: "Diesel", quantity: 320, emissionFactorId: emissionFactors[0].id, date: monthsAgo(3), autoCalculated: true },
@@ -154,20 +163,20 @@ async function main() {
   await prisma.employeeParticipation.createMany({
     data: [
       { employeeId: employees[0].id, activityId: csrActivities[0].id, proofUrl: "https://example.com/proofs/river-cleanup-priya.jpg", approvalStatus: "Approved", pointsEarned: 80, completionDate: daysAgo(22) },
-      { employeeId: employees[1].id, activityId: csrActivities[0].id, proofUrl: null, approvalStatus: "Pending", pointsEarned: 50, completionDate: null },
+      { employeeId: employees[1].id, activityId: csrActivities[0].id, proofUrl: "https://example.com/proofs/river-cleanup-verma.jpg", approvalStatus: "Approved", pointsEarned: 50, completionDate: daysAgo(21) },
       { employeeId: employees[2].id, activityId: csrActivities[1].id, proofUrl: null, approvalStatus: "Rejected", pointsEarned: 0, completionDate: null },
       { employeeId: employees[3].id, activityId: csrActivities[2].id, proofUrl: "https://example.com/proofs/waste-audit-mateo.pdf", approvalStatus: "Approved", pointsEarned: 90, completionDate: daysAgo(7) },
-      { employeeId: employees[4].id, activityId: csrActivities[2].id, proofUrl: null, approvalStatus: "Pending", pointsEarned: 60, completionDate: null },
+      { employeeId: employees[4].id, activityId: csrActivities[2].id, proofUrl: "https://example.com/proofs/waste-audit-noor.pdf", approvalStatus: "Approved", pointsEarned: 60, completionDate: daysAgo(6) },
       { employeeId: employees[5].id, activityId: csrActivities[3].id, proofUrl: "https://example.com/proofs/paperless-jordan.png", approvalStatus: "Approved", pointsEarned: 110, completionDate: daysAgo(2) },
       { employeeId: employees[6].id, activityId: csrActivities[3].id, proofUrl: null, approvalStatus: "Pending", pointsEarned: 40, completionDate: null },
-      { employeeId: employees[7].id, activityId: csrActivities[1].id, proofUrl: null, approvalStatus: "Rejected", pointsEarned: 0, completionDate: null }
+      { employeeId: employees[7].id, activityId: csrActivities[1].id, proofUrl: "https://example.com/proofs/plantation-omar.jpg", approvalStatus: "Approved", pointsEarned: 40, completionDate: daysAgo(5) }
     ]
   });
 
   await prisma.challengeParticipation.createMany({
     data: [
       { challengeId: challenges[0].id, employeeId: employees[0].id, progress: 100, proofUrl: null, approvalStatus: "Approved", xpAwarded: 120 },
-      { challengeId: challenges[1].id, employeeId: employees[3].id, progress: 70, proofUrl: "https://example.com/proofs/zero-waste-mateo.pdf", approvalStatus: "Pending", xpAwarded: 180 },
+      { challengeId: challenges[1].id, employeeId: employees[3].id, progress: 100, proofUrl: "https://example.com/proofs/zero-waste-mateo.pdf", approvalStatus: "Approved", xpAwarded: 180 },
       { challengeId: challenges[1].id, employeeId: employees[4].id, progress: 30, proofUrl: null, approvalStatus: "Pending", xpAwarded: 0 },
       { challengeId: challenges[2].id, employeeId: employees[5].id, progress: 100, proofUrl: "https://example.com/proofs/commute-jordan.pdf", approvalStatus: "Approved", xpAwarded: 420 },
       { challengeId: challenges[2].id, employeeId: employees[6].id, progress: 85, proofUrl: null, approvalStatus: "Rejected", xpAwarded: 0 }
@@ -196,15 +205,15 @@ async function main() {
       { auditId: audits[0].id, severity: "Medium", description: "Documented energy checks need monthly sign-off.", ownerId: employees[0].id, dueDate: daysAgo(2), status: "Resolved", isOverdue: false },
       { auditId: audits[0].id, severity: "Low", description: "Some contractor induction records are incomplete.", ownerId: employees[1].id, dueDate: daysAgo(6), status: "Resolved", isOverdue: false },
       { auditId: audits[1].id, severity: "High", description: "Route optimization action plan not yet submitted.", ownerId: employees[3].id, dueDate: daysAgo(15), status: "Open", isOverdue: true },
-      { auditId: audits[1].id, severity: "Medium", description: "Warehouse packaging waste tracking needs weekly reporting.", ownerId: employees[4].id, dueDate: daysAgo(4), status: "Open", isOverdue: false }
+      { auditId: audits[1].id, severity: "Medium", description: "Warehouse packaging waste tracking needs weekly reporting.", ownerId: employees[4].id, dueDate: daysAgo(4), status: "Resolved", isOverdue: false }
     ]
   });
 
   await prisma.departmentScore.createMany({
     data: [
-      { departmentId: manufacturing.id, environmentalScore: 74, socialScore: 68, governanceScore: 71, totalScore: 71, computedAt: now },
-      { departmentId: logistics.id, environmentalScore: 61, socialScore: 70, governanceScore: 64, totalScore: 65, computedAt: now },
-      { departmentId: corporate.id, environmentalScore: 82, socialScore: 77, governanceScore: 84, totalScore: 81, computedAt: now }
+      { departmentId: manufacturing.id, environmentalScore: 67.5, socialScore: 66.7, governanceScore: 91.7, totalScore: 74.5, computedAt: now },
+      { departmentId: logistics.id, environmentalScore: 87.5, socialScore: 100.0, governanceScore: 67.5, totalScore: 85.3, computedAt: now },
+      { departmentId: corporate.id, environmentalScore: 90.0, socialScore: 66.7, governanceScore: 91.7, totalScore: 83.5, computedAt: now }
     ]
   });
 
