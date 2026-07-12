@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Leaf, Plus, Sparkles, AlertCircle } from "lucide-react";
+import { getStorageItem, setStorageItem } from "@/lib/storage";
 
 type Department = { id: number; name: string };
 type EmissionFactor = { id: number; sourceType: string; unit: string; co2PerUnit: number };
@@ -66,42 +67,85 @@ export function EnvironmentalClient({
   const [products, setProducts] = useState<ProductESG[]>(initialProducts);
   const [transactions, setTransactions] = useState<CarbonTx[]>(initialTransactions);
 
-  // Sync state props with refreshed database content (using robust merge)
+  // Sync state props with refreshed database content (using robust merge + local storage)
   useEffect(() => {
     setFactors((prev) => {
+      const local = getStorageItem<EmissionFactor[]>("custom_factors", []);
       const merged = [...initialFactors];
-      for (const f of prev) {
-        if (!merged.some((m) => m.id === f.id)) {
-          merged.push(f);
-        }
-      }
-      return merged;
+      const all = [...merged, ...local, ...prev];
+      const unique = all.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id)
+      );
+      return unique;
     });
   }, [initialFactors]);
 
   useEffect(() => {
     setProducts((prev) => {
+      const local = getStorageItem<ProductESG[]>("custom_products", []);
       const merged = [...initialProducts];
-      for (const p of prev) {
-        if (!merged.some((m) => m.id === p.id)) {
-          merged.push(p);
-        }
-      }
-      return merged;
+      const all = [...merged, ...local, ...prev];
+      const unique = all.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id)
+      );
+      return unique;
     });
   }, [initialProducts]);
 
   useEffect(() => {
     setTransactions((prev) => {
+      const local = getStorageItem<CarbonTx[]>("custom_transactions", []);
       const merged = [...initialTransactions];
-      for (const t of prev) {
-        if (!merged.some((m) => m.id === t.id)) {
-          merged.push(t);
-        }
-      }
-      return merged;
+      const all = [...merged, ...local, ...prev];
+      const unique = all.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id)
+      );
+      return unique;
     });
   }, [initialTransactions]);
+
+  // Load custom localStorage logs on initial mount
+  useEffect(() => {
+    const localTxs = getStorageItem<CarbonTx[]>("custom_transactions", []);
+    const localProducts = getStorageItem<ProductESG[]>("custom_products", []);
+    const localFactors = getStorageItem<EmissionFactor[]>("custom_factors", []);
+
+    if (localTxs.length > 0) {
+      setTransactions((prev) => {
+        const merged = [...prev];
+        for (const t of localTxs) {
+          if (!merged.some((m) => m.id === t.id)) {
+            merged.push(t);
+          }
+        }
+        return merged;
+      });
+    }
+
+    if (localProducts.length > 0) {
+      setProducts((prev) => {
+        const merged = [...prev];
+        for (const p of localProducts) {
+          if (!merged.some((m) => m.id === p.id)) {
+            merged.push(p);
+          }
+        }
+        return merged;
+      });
+    }
+
+    if (localFactors.length > 0) {
+      setFactors((prev) => {
+        const merged = [...prev];
+        for (const f of localFactors) {
+          if (!merged.some((m) => m.id === f.id)) {
+            merged.push(f);
+          }
+        }
+        return merged;
+      });
+    }
+  }, []);
 
   // Forms state
   const [carbonTxForm, setCarbonTxForm] = useState({
@@ -142,7 +186,12 @@ export function EnvironmentalClient({
       });
       const data = await response.json();
       if (response.ok) {
-        setTransactions([data, ...transactions]);
+        const updatedTxs = [data, ...transactions];
+        setTransactions(updatedTxs);
+        // Save to localStorage
+        const localTxs = getStorageItem<CarbonTx[]>("custom_transactions", []);
+        setStorageItem("custom_transactions", [data, ...localTxs]);
+
         triggerFeedback(`Successfully logged footprint! Computed CO2: ${data.computedCO2} kg.`, "success");
         router.refresh();
       } else {
@@ -167,7 +216,12 @@ export function EnvironmentalClient({
       });
       const data = await response.json();
       if (response.ok) {
-        setFactors([...factors, data]);
+        const updatedFactors = [...factors, data];
+        setFactors(updatedFactors);
+        // Save to localStorage
+        const localFactors = getStorageItem<EmissionFactor[]>("custom_factors", []);
+        setStorageItem("custom_factors", [...localFactors, data]);
+
         triggerFeedback(`Emission factor '${data.sourceType}' added.`, "success");
         setFactorForm({ sourceType: "", unit: "", co2PerUnit: 0 });
         router.refresh();
@@ -193,10 +247,22 @@ export function EnvironmentalClient({
       });
       const data = await response.json();
       if (response.ok) {
+        // Hydrate department relation object for immediate rendering
+        const fullProduct = {
+          ...data,
+          department: {
+            name: departments.find((d) => d.id === productForm.departmentId)?.name || "Corporate"
+          }
+        };
+        const updatedProducts = [...products, fullProduct];
+        setProducts(updatedProducts);
+        // Save to localStorage
+        const localProducts = getStorageItem<ProductESG[]>("custom_products", []);
+        setStorageItem("custom_products", [...localProducts, fullProduct]);
+
         triggerFeedback(`Registered product profile '${data.productName}'!`, "success");
         setProductForm({ productName: "", departmentId: departments[0]?.id || 1, materialType: "", carbonFootprint: 0, recyclable: true });
         router.refresh();
-        setTimeout(() => window.location.reload(), 800);
       } else {
         triggerFeedback(data.error || "Failed to add product profile.", "error");
       }

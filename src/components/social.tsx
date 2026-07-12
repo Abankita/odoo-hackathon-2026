@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getStorageItem, setStorageItem } from "@/lib/storage";
 import { Users, Heart, Sparkles, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 
 type Employee = { id: number; name: string; department: { name: string } };
@@ -44,22 +45,68 @@ export function SocialClient({ employees, activities, participations: initialPar
   const router = useRouter();
 
   const [participations, setParticipations] = useState<Participation[]>(initialParticipations);
+  const [activitiesList, setActivitiesList] = useState<CSRActivity[]>(activities);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number>(employees[0]?.id || 1);
   const [proofUrl, setProofUrl] = useState<string>("");
   const [feedback, setFeedback] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
-  // Sync state props with refreshed database content (using robust merge)
+  // Sync activities with initial prop + localStorage
+  useEffect(() => {
+    setActivitiesList((prev) => {
+      const local = getStorageItem<CSRActivity[]>("custom_activities", []);
+      const merged = [...activities];
+      const all = [...merged, ...local, ...prev];
+      const unique = all.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id)
+      );
+      return unique;
+    });
+  }, [activities]);
+
+  // Load custom activities on initial mount
+  useEffect(() => {
+    const local = getStorageItem<CSRActivity[]>("custom_activities", []);
+    if (local.length > 0) {
+      setActivitiesList((prev) => {
+        const merged = [...prev];
+        for (const a of local) {
+          if (!merged.some((m) => m.id === a.id)) {
+            merged.push(a);
+          }
+        }
+        return merged;
+      });
+    }
+  }, []);
+
+  // Sync state props with refreshed database content (using robust merge + local storage)
   useEffect(() => {
     setParticipations((prev) => {
+      const local = getStorageItem<Participation[]>("custom_csr_participations", []);
       const merged = [...initialParticipations];
-      for (const p of prev) {
-        if (!merged.some((m) => m.id === p.id || (m.activityId === p.activityId && m.employeeId === p.employeeId))) {
-          merged.push(p);
-        }
-      }
-      return merged;
+      const all = [...merged, ...local, ...prev];
+      const unique = all.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id || (t.activityId === item.activityId && t.employeeId === item.employeeId))
+      );
+      return unique;
     });
   }, [initialParticipations]);
+
+  // Load custom localStorage logs on initial mount
+  useEffect(() => {
+    const local = getStorageItem<Participation[]>("custom_csr_participations", []);
+    if (local.length > 0) {
+      setParticipations((prev) => {
+        const merged = [...prev];
+        for (const p of local) {
+          if (!merged.some((m) => m.id === p.id || (m.activityId === p.activityId && m.employeeId === p.employeeId))) {
+            merged.push(p);
+          }
+        }
+        return merged;
+      });
+    }
+  }, []);
 
   const activeEmployee = employees.find((e) => e.id === selectedEmployeeId);
 
@@ -94,10 +141,17 @@ export function SocialClient({ employees, activities, participations: initialPar
           },
           activity: {
             title: activityTitle,
-            evidenceRequired: activities.find((a) => a.id === activityId)?.evidenceRequired ?? true
+            evidenceRequired: activitiesList.find((a) => a.id === activityId)?.evidenceRequired ?? true
           }
         };
-        setParticipations([freshPart, ...participations]);
+        const updated = [freshPart, ...participations];
+        setParticipations(updated);
+
+        // Save to localStorage
+        const local = getStorageItem<Participation[]>("custom_csr_participations", []);
+        const filtered = local.filter((item) => !(item.activityId === data.activityId && item.employeeId === data.employeeId));
+        setStorageItem("custom_csr_participations", [freshPart, ...filtered]);
+
         triggerFeedback("Successfully signed up for CSR activity!", "success");
         setProofUrl("");
         router.refresh();
@@ -233,7 +287,7 @@ export function SocialClient({ employees, activities, participations: initialPar
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
-            {activities.map((activity) => {
+            {activitiesList.map((activity) => {
               const joined = participations.some(
                 (p) => p.activityId === activity.id && p.employeeId === selectedEmployeeId
               );

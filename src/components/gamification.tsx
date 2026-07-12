@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Trophy, Star, Shield, HelpCircle, Lock, Award, Heart, CheckCircle2 } from "lucide-react";
+import { getStorageItem, setStorageItem } from "@/lib/storage";
 
 type Employee = {
   id: number;
@@ -87,6 +88,7 @@ export function GamificationClient({
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
   const [participations, setParticipations] = useState<ChallengeParticipation[]>(initialParticipations);
   const [employeeBadges, setEmployeeBadges] = useState<typeof initialEmployeeBadges>(initialEmployeeBadges);
+  const [challengesList, setChallengesList] = useState<Challenge[]>(challenges);
   
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number>(initialEmployees[0]?.id || 1);
   const [challengeFilter, setChallengeFilter] = useState<string>("Active");
@@ -94,18 +96,63 @@ export function GamificationClient({
   
   const [feedbackMessage, setFeedbackMessage] = useState<{ text: string; type: "success" | "error" | "badge" } | null>(null);
 
-  // Sync state props with refreshed data from server component (using robust merge)
+  // Sync challenges with initial prop + localStorage
+  useEffect(() => {
+    setChallengesList((prev) => {
+      const local = getStorageItem<Challenge[]>("custom_challenges", []);
+      const merged = [...challenges];
+      const all = [...merged, ...local, ...prev];
+      const unique = all.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id)
+      );
+      return unique;
+    });
+  }, [challenges]);
+
+  // Load custom challenges on initial mount
+  useEffect(() => {
+    const local = getStorageItem<Challenge[]>("custom_challenges", []);
+    if (local.length > 0) {
+      setChallengesList((prev) => {
+        const merged = [...prev];
+        for (const c of local) {
+          if (!merged.some((m) => m.id === c.id)) {
+            merged.push(c);
+          }
+        }
+        return merged;
+      });
+    }
+  }, []);
+
+  // Sync state props with refreshed data from server component (using robust merge + local storage)
   useEffect(() => {
     setParticipations((prev) => {
+      const local = getStorageItem<ChallengeParticipation[]>("custom_participations", []);
       const merged = [...initialParticipations];
-      for (const p of prev) {
-        if (!merged.some((m) => m.id === p.id || (m.challengeId === p.challengeId && m.employeeId === p.employeeId))) {
-          merged.push(p);
-        }
-      }
-      return merged;
+      const all = [...merged, ...local, ...prev];
+      const unique = all.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id || (t.challengeId === item.challengeId && t.employeeId === item.employeeId))
+      );
+      return unique;
     });
   }, [initialParticipations]);
+
+  // Load custom localStorage logs on initial mount
+  useEffect(() => {
+    const local = getStorageItem<ChallengeParticipation[]>("custom_participations", []);
+    if (local.length > 0) {
+      setParticipations((prev) => {
+        const merged = [...prev];
+        for (const p of local) {
+          if (!merged.some((m) => m.id === p.id || (m.challengeId === p.challengeId && m.employeeId === p.employeeId))) {
+            merged.push(p);
+          }
+        }
+        return merged;
+      });
+    }
+  }, []);
 
   useEffect(() => {
     setEmployees(initialEmployees);
@@ -134,7 +181,14 @@ export function GamificationClient({
       });
       const data = await response.json();
       if (response.ok) {
-        setParticipations([...participations, data]);
+        const updated = [...participations, data];
+        setParticipations(updated);
+        
+        // Save to localStorage
+        const local = getStorageItem<ChallengeParticipation[]>("custom_participations", []);
+        const filtered = local.filter((item) => !(item.challengeId === data.challengeId && item.employeeId === data.employeeId));
+        setStorageItem("custom_participations", [...filtered, data]);
+
         showFeedback("Successfully joined the challenge! Earn XP and save carbon.", "success");
         router.refresh();
       } else {
@@ -155,11 +209,20 @@ export function GamificationClient({
       const data = await response.json();
       if (response.ok) {
         // Update local participations
-        setParticipations(
-          participations.map((p) =>
-            p.id === participationId ? { ...p, progress: 100, approvalStatus: "Approved" } : p
-          )
+        const updatedObj = { ...data, progress: 100, approvalStatus: "Approved" };
+        setParticipations((prev) =>
+          prev.map((p) => (p.id === participationId || (p.challengeId === data.challengeId && p.employeeId === data.employeeId) ? updatedObj : p))
         );
+
+        // Save/Update in localStorage
+        const local = getStorageItem<ChallengeParticipation[]>("custom_participations", []);
+        const updatedLocal = local.map((p) =>
+          p.id === participationId || (p.challengeId === data.challengeId && p.employeeId === data.employeeId) ? updatedObj : p
+        );
+        if (!updatedLocal.some((p) => p.id === participationId)) {
+          updatedLocal.push(updatedObj);
+        }
+        setStorageItem("custom_participations", updatedLocal);
         
         // Update local employees details
         if (activeEmployee) {
@@ -362,10 +425,10 @@ export function GamificationClient({
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {challenges.filter((c) => c.status === challengeFilter).length === 0 ? (
+            {challengesList.filter((c) => c.status === challengeFilter).length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-10">No challenges found under this category filter.</p>
             ) : (
-              challenges
+              challengesList
                 .filter((c) => c.status === challengeFilter)
                 .map((challenge) => {
                   const userPart = participations.find(

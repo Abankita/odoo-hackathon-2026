@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Settings, Plus, Sparkles, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { getStorageItem, setStorageItem } from "@/lib/storage";
 
 type Department = {
   id: number;
@@ -85,14 +86,60 @@ export function SettingsClient({ config, departments: initialDepartments, catego
 
   const [feedback, setFeedback] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
-  // Sync props to state on database updates
+  // Sync state props with refreshed database content (using robust merge + local storage)
   useEffect(() => {
-    setDepartments(initialDepartments);
+    setDepartments((prev) => {
+      const local = getStorageItem<Department[]>("custom_departments", []);
+      const merged = [...initialDepartments];
+      const all = [...merged, ...local, ...prev];
+      const unique = all.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id)
+      );
+      return unique;
+    });
   }, [initialDepartments]);
 
   useEffect(() => {
-    setCategories(initialCategories);
+    setCategories((prev) => {
+      const local = getStorageItem<Category[]>("custom_categories", []);
+      const merged = [...initialCategories];
+      const all = [...merged, ...local, ...prev];
+      const unique = all.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id)
+      );
+      return unique;
+    });
   }, [initialCategories]);
+
+  // Load custom localStorage logs on initial mount
+  useEffect(() => {
+    const localDepts = getStorageItem<Department[]>("custom_departments", []);
+    const localCats = getStorageItem<Category[]>("custom_categories", []);
+
+    if (localDepts.length > 0) {
+      setDepartments((prev) => {
+        const merged = [...prev];
+        for (const d of localDepts) {
+          if (!merged.some((m) => m.id === d.id)) {
+            merged.push(d);
+          }
+        }
+        return merged;
+      });
+    }
+
+    if (localCats.length > 0) {
+      setCategories((prev) => {
+        const merged = [...prev];
+        for (const c of localCats) {
+          if (!merged.some((m) => m.id === c.id)) {
+            merged.push(c);
+          }
+        }
+        return merged;
+      });
+    }
+  }, []);
 
   const weightSum = envWeight + socialWeight + govWeight;
   const isWeightsValid = weightSum === 100;
@@ -149,7 +196,12 @@ export function SettingsClient({ config, departments: initialDepartments, catego
       });
       const data = await response.json();
       if (response.ok) {
-        setDepartments([...departments, data]);
+        const updated = [...departments, data];
+        setDepartments(updated);
+        // Save to localStorage
+        const local = getStorageItem<Department[]>("custom_departments", []);
+        setStorageItem("custom_departments", [...local, data]);
+
         triggerFeedback(`Department '${data.name}' added successfully!`, "success");
         setDeptForm({ name: "", code: "", head: "", employeeCount: 0 });
         router.refresh();
@@ -175,7 +227,12 @@ export function SettingsClient({ config, departments: initialDepartments, catego
       });
       const data = await response.json();
       if (response.ok) {
-        setCategories([...categories, data]);
+        const updated = [...categories, data];
+        setCategories(updated);
+        // Save to localStorage
+        const local = getStorageItem<Category[]>("custom_categories", []);
+        setStorageItem("custom_categories", [...local, data]);
+
         triggerFeedback(`ESG Category '${data.name}' added!`, "success");
         setCatForm({ name: "", type: "CSR_ACTIVITY" });
         router.refresh();
@@ -201,6 +258,16 @@ export function SettingsClient({ config, departments: initialDepartments, catego
       });
       const data = await response.json();
       if (response.ok) {
+        // Save to localStorage so Gamification screen can merge it
+        const local = getStorageItem<any[]>("custom_challenges", []);
+        const challengeWithCategory = {
+          ...data,
+          category: {
+            name: categories.find((c) => c.id === challengeForm.categoryId)?.name || "Energy Challenge"
+          }
+        };
+        setStorageItem("custom_challenges", [...local, challengeWithCategory]);
+
         triggerFeedback(`Task (Challenge) '${data.title}' created successfully!`, "success");
         setChallengeForm({
           title: "",
@@ -234,6 +301,16 @@ export function SettingsClient({ config, departments: initialDepartments, catego
       });
       const data = await response.json();
       if (response.ok) {
+        // Save to localStorage so Social screen can merge it
+        const local = getStorageItem<any[]>("custom_activities", []);
+        const activityWithCategory = {
+          ...data,
+          category: {
+            name: categories.find((c) => c.id === activityForm.categoryId)?.name || "Volunteer Day"
+          }
+        };
+        setStorageItem("custom_activities", [...local, activityWithCategory]);
+
         triggerFeedback(`CSR Activity '${data.title}' created!`, "success");
         setActivityForm({
           title: "",
