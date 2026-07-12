@@ -94,9 +94,17 @@ export function GamificationClient({
   
   const [feedbackMessage, setFeedbackMessage] = useState<{ text: string; type: "success" | "error" | "badge" } | null>(null);
 
-  // Sync state props with refreshed data from server component
+  // Sync state props with refreshed data from server component (using robust merge)
   useEffect(() => {
-    setParticipations(initialParticipations);
+    setParticipations((prev) => {
+      const merged = [...initialParticipations];
+      for (const p of prev) {
+        if (!merged.some((m) => m.id === p.id || (m.challengeId === p.challengeId && m.employeeId === p.employeeId))) {
+          merged.push(p);
+        }
+      }
+      return merged;
+    });
   }, [initialParticipations]);
 
   useEffect(() => {

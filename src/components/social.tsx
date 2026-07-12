@@ -48,9 +48,17 @@ export function SocialClient({ employees, activities, participations: initialPar
   const [proofUrl, setProofUrl] = useState<string>("");
   const [feedback, setFeedback] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
-  // Sync state props with refreshed database content
+  // Sync state props with refreshed database content (using robust merge)
   useEffect(() => {
-    setParticipations(initialParticipations);
+    setParticipations((prev) => {
+      const merged = [...initialParticipations];
+      for (const p of prev) {
+        if (!merged.some((m) => m.id === p.id || (m.activityId === p.activityId && m.employeeId === p.employeeId))) {
+          merged.push(p);
+        }
+      }
+      return merged;
+    });
   }, [initialParticipations]);
 
   const activeEmployee = employees.find((e) => e.id === selectedEmployeeId);
