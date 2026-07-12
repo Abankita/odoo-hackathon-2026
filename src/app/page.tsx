@@ -1,18 +1,47 @@
-export default function HomePage() {
+import { DashboardClient } from "@/components/dashboard";
+import {
+  getDashboardInsights,
+  getDashboardMetrics,
+  getDepartmentRanking,
+  getMonthlyEmissions,
+  getRecentActivity
+} from "@/lib/eco-data";
+
+type Props = {
+  searchParams: {
+    departmentId?: string;
+  };
+};
+
+export default async function HomePage({ searchParams }: Props) {
+  const departmentId = searchParams.departmentId ? Number(searchParams.departmentId) : null;
+
+  const [metrics, trend, ranking, activity, insights] = await Promise.all([
+    getDashboardMetrics(departmentId),
+    getMonthlyEmissions(departmentId),
+    getDepartmentRanking(),
+    getRecentActivity(),
+    getDashboardInsights()
+  ]);
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-      <div className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-10 shadow-sm">
-        <p className="text-sm font-medium uppercase tracking-[0.24em] text-slate-500">
-          EcoSphere
-        </p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950">
-          ESG Management Platform scaffold
-        </h1>
-        <p className="mt-4 text-base leading-7 text-slate-600">
-          Hour 1 is ready: Next.js 14, TypeScript, Tailwind, shadcn/ui config,
-          Prisma, SQLite, schema, and seed data.
-        </p>
-      </div>
-    </main>
+    <DashboardClient
+      metrics={{
+        environmental: metrics.environmental,
+        social: metrics.social,
+        governance: metrics.governance,
+        overall: metrics.overall
+      }}
+      trend={trend.map((entry) => ({ label: entry.label, total: entry.total }))}
+      ranking={ranking.map((entry) => ({ id: entry.id, name: entry.name, totalScore: entry.totalScore }))}
+      insights={insights.insights.map((insight) => ({
+        id: insight.id,
+        title: insight.title,
+        text: insight.text,
+        type: insight.type
+      }))}
+      activity={activity}
+      departments={metrics.departments.map((department) => ({ id: department.id, name: department.name }))}
+    />
   );
 }
