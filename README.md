@@ -121,7 +121,6 @@ All rules are configurable per organization via Settings, ESG Configuration.
 | Database ORM | Prisma |
 | Database | SQLite |
 | Charts | Recharts |
-| Fonts | Inter |
 | Deployment | Vercel |
 
 ---
