@@ -1,1 +1,1 @@
-# odoo-hackathon-2026
+#  EcoSphere ESG Management Platform
