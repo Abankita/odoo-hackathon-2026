@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,19 @@ export function EnvironmentalClient({
   const [factors, setFactors] = useState<EmissionFactor[]>(initialFactors);
   const [products, setProducts] = useState<ProductESG[]>(initialProducts);
   const [transactions, setTransactions] = useState<CarbonTx[]>(initialTransactions);
+
+  // Sync state props with refreshed database content
+  useEffect(() => {
+    setFactors(initialFactors);
+  }, [initialFactors]);
+
+  useEffect(() => {
+    setProducts(initialProducts);
+  }, [initialProducts]);
+
+  useEffect(() => {
+    setTransactions(initialTransactions);
+  }, [initialTransactions]);
 
   // Forms state
   const [carbonTxForm, setCarbonTxForm] = useState({

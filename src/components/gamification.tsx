@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,6 +93,19 @@ export function GamificationClient({
   const [leaderboardTab, setLeaderboardTab] = useState<"employees" | "departments">("employees");
   
   const [feedbackMessage, setFeedbackMessage] = useState<{ text: string; type: "success" | "error" | "badge" } | null>(null);
+
+  // Sync state props with refreshed data from server component
+  useEffect(() => {
+    setParticipations(initialParticipations);
+  }, [initialParticipations]);
+
+  useEffect(() => {
+    setEmployees(initialEmployees);
+  }, [initialEmployees]);
+
+  useEffect(() => {
+    setEmployeeBadges(initialEmployeeBadges);
+  }, [initialEmployeeBadges]);
 
   const activeEmployee = employees.find((e) => e.id === selectedEmployeeId);
 

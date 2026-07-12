@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,16 @@ export function GovernanceClient({
 
   const [issues, setIssues] = useState<ComplianceIssue[]>(initialIssues);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
+
+  // Sync state props with refreshed database content
+  useEffect(() => {
+    setIssues(initialIssues);
+  }, [initialIssues]);
+
+  useEffect(() => {
+    setNotifications(initialNotifications);
+  }, [initialNotifications]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 

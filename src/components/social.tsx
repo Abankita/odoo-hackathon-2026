@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,11 @@ export function SocialClient({ employees, activities, participations: initialPar
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number>(employees[0]?.id || 1);
   const [proofUrl, setProofUrl] = useState<string>("");
   const [feedback, setFeedback] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  // Sync state props with refreshed database content
+  useEffect(() => {
+    setParticipations(initialParticipations);
+  }, [initialParticipations]);
 
   const activeEmployee = employees.find((e) => e.id === selectedEmployeeId);
 

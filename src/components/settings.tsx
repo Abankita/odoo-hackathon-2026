@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,36 @@ export function SettingsClient({ config, departments: initialDepartments, catego
   const [deptForm, setDeptForm] = useState({ name: "", code: "", head: "", employeeCount: 0 });
   const [catForm, setCatForm] = useState({ name: "", type: "CSR_ACTIVITY" });
 
+  // Challenges & CSR Activities Form States
+  const [challengeForm, setChallengeForm] = useState({
+    title: "",
+    description: "",
+    categoryId: initialCategories.find((c) => c.type === "CHALLENGE")?.id || 1,
+    xp: 100,
+    difficulty: "Easy",
+    evidenceRequired: false,
+    status: "Active"
+  });
+
+  const [activityForm, setActivityForm] = useState({
+    title: "",
+    description: "",
+    categoryId: initialCategories.find((c) => c.type === "CSR_ACTIVITY")?.id || 1,
+    evidenceRequired: false,
+    date: new Date().toISOString().split("T")[0],
+    status: "Published"
+  });
+
   const [feedback, setFeedback] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  // Sync props to state on database updates
+  useEffect(() => {
+    setDepartments(initialDepartments);
+  }, [initialDepartments]);
+
+  useEffect(() => {
+    setCategories(initialCategories);
+  }, [initialCategories]);
 
   const weightSum = envWeight + socialWeight + govWeight;
   const isWeightsValid = weightSum === 100;
@@ -152,6 +181,71 @@ export function SettingsClient({ config, departments: initialDepartments, catego
         router.refresh();
       } else {
         triggerFeedback(data.error || "Failed to add category.", "error");
+      }
+    } catch {
+      triggerFeedback("Network error occurred.", "error");
+    }
+  };
+
+  const handleAddChallenge = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!challengeForm.title || !challengeForm.description) {
+      triggerFeedback("Title and description are required.", "error");
+      return;
+    }
+    try {
+      const response = await fetch("/api/settings/challenges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(challengeForm)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        triggerFeedback(`Task (Challenge) '${data.title}' created successfully!`, "success");
+        setChallengeForm({
+          title: "",
+          description: "",
+          categoryId: categories.find((c) => c.type === "CHALLENGE")?.id || 1,
+          xp: 100,
+          difficulty: "Easy",
+          evidenceRequired: false,
+          status: "Active"
+        });
+        router.refresh();
+      } else {
+        triggerFeedback(data.error || "Failed to create challenge.", "error");
+      }
+    } catch {
+      triggerFeedback("Network error occurred.", "error");
+    }
+  };
+
+  const handleAddActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activityForm.title || !activityForm.description) {
+      triggerFeedback("Title and description are required.", "error");
+      return;
+    }
+    try {
+      const response = await fetch("/api/settings/activities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(activityForm)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        triggerFeedback(`CSR Activity '${data.title}' created!`, "success");
+        setActivityForm({
+          title: "",
+          description: "",
+          categoryId: categories.find((c) => c.type === "CSR_ACTIVITY")?.id || 1,
+          evidenceRequired: false,
+          date: new Date().toISOString().split("T")[0],
+          status: "Published"
+        });
+        router.refresh();
+      } else {
+        triggerFeedback(data.error || "Failed to create CSR activity.", "error");
       }
     } catch {
       triggerFeedback("Network error occurred.", "error");
@@ -355,6 +449,122 @@ export function SettingsClient({ config, departments: initialDepartments, catego
                 </TableBody>
               </Table>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Create Sustainability Task (Challenge) */}
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-bold">Sustainability Challenges Creator</CardTitle>
+            <CardDescription className="text-xs">Add new tasks for employees to join and complete in the Gamification module.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAddChallenge} className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Challenge Title</label>
+                  <Input value={challengeForm.title} onChange={(e) => setChallengeForm({ ...challengeForm, title: e.target.value })} placeholder="e.g. Bring Your Own Cup" className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Category</label>
+                  <Select value={challengeForm.categoryId} onChange={(e) => setChallengeForm({ ...challengeForm, categoryId: Number(e.target.value) })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-semibold">
+                    {categories.filter(c => c.type === "CHALLENGE").map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Description</label>
+                <Input value={challengeForm.description} onChange={(e) => setChallengeForm({ ...challengeForm, description: e.target.value })} placeholder="Detailed instructions or rules for the challenge..." className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-medium" />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">XP Reward</label>
+                  <Input type="number" value={challengeForm.xp} onChange={(e) => setChallengeForm({ ...challengeForm, xp: Number(e.target.value) })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Difficulty</label>
+                  <Select value={challengeForm.difficulty} onChange={(e) => setChallengeForm({ ...challengeForm, difficulty: e.target.value })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-semibold">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requires Proof</label>
+                  <Select value={challengeForm.evidenceRequired ? "yes" : "no"} onChange={(e) => setChallengeForm({ ...challengeForm, evidenceRequired: e.target.value === "yes" })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-semibold">
+                    <option value="no">No</option>
+                    <option value="yes">Yes (Proof Required)</option>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Initial Status</label>
+                  <Select value={challengeForm.status} onChange={(e) => setChallengeForm({ ...challengeForm, status: e.target.value })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-semibold">
+                    <option value="Active">Active</option>
+                    <option value="Draft">Draft</option>
+                  </Select>
+                </div>
+              </div>
+              <Button type="submit" size="sm" className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg flex items-center gap-1 text-xs py-1.5 h-8 w-fit">
+                <Plus className="h-3.5 w-3.5" />
+                <span>Create Challenge</span>
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Create CSR Activity */}
+        <Card className="shadow-sm border-slate-100 bg-white rounded-2xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-bold">CSR & Volunteering Activities Creator</CardTitle>
+            <CardDescription className="text-xs">Create new corporate social responsibility programs or green volunteering events.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAddActivity} className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Activity Title</label>
+                  <Input value={activityForm.title} onChange={(e) => setActivityForm({ ...activityForm, title: e.target.value })} placeholder="e.g. Community Forestation Day" className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Category</label>
+                  <Select value={activityForm.categoryId} onChange={(e) => setActivityForm({ ...activityForm, categoryId: Number(e.target.value) })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-semibold">
+                    {categories.filter(c => c.type === "CSR_ACTIVITY").map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Description</label>
+                <Input value={activityForm.description} onChange={(e) => setActivityForm({ ...activityForm, description: e.target.value })} placeholder="Activity location, description, or volunteer slots..." className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-medium" />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Event Date</label>
+                  <Input type="date" value={activityForm.date} onChange={(e) => setActivityForm({ ...activityForm, date: e.target.value })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-medium" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requires Proof</label>
+                  <Select value={activityForm.evidenceRequired ? "yes" : "no"} onChange={(e) => setActivityForm({ ...activityForm, evidenceRequired: e.target.value === "yes" })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-semibold">
+                    <option value="no">No</option>
+                    <option value="yes">Yes (Proof Required)</option>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</label>
+                  <Select value={activityForm.status} onChange={(e) => setActivityForm({ ...activityForm, status: e.target.value })} className="bg-slate-50 border-slate-200 rounded-lg text-xs h-9 font-semibold">
+                    <option value="Published">Published</option>
+                    <option value="Planned">Planned (Draft)</option>
+                  </Select>
+                </div>
+              </div>
+              <Button type="submit" size="sm" className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg flex items-center gap-1 text-xs py-1.5 h-8 w-fit">
+                <Plus className="h-3.5 w-3.5" />
+                <span>Create CSR Activity</span>
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
