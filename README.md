@@ -169,7 +169,3 @@ README.md
 ```
 
 ---
-
-## Team
-
-Built solo for the Odoo Hackathon 2026, with implementation assistance from Antigravity (AI coding tool), directed and QA'd end to end.
