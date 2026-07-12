@@ -9,14 +9,14 @@ import {
   checkBadgeUnlocks,
   flagOverdueIssues,
   redeemReward
-} from "../src/server/engine";
-import { prisma } from "../src/server/prisma";
+} from "@/server/engine";
+import { prisma } from "@/server/prisma";
 
 async function main() {
   const departments = await prisma.department.findMany({ orderBy: { id: "asc" } });
 
   console.log("\n=== Department score breakdown ===");
-  const rows = [] as Array<Record<string, string | number>>;
+  const rows: Array<Record<string, string | number>> = [];
 
   for (const department of departments) {
     const [environmentalScore, socialScore, governanceScore, departmentScore] = await Promise.all([
@@ -52,8 +52,12 @@ async function main() {
 
   console.log("\n=== canApproveParticipation results ===");
   const participationRows = [] as Array<Record<string, string | number | boolean | null>>;
-  for (const participation of participationChecks.filter(Boolean)) {
-    const id = participation!.id;
+  for (const participation of participationChecks) {
+    if (!participation) {
+      continue;
+    }
+
+    const id = participation.id;
     participationRows.push({
       ParticipationId: id,
       Approved: await canApproveParticipation(id)
@@ -105,7 +109,7 @@ async function main() {
   });
 
   console.log("\n=== compliance notifications ===");
-  console.table(notifiedIssues.map((notification) => ({ id: notification.id, recipientId: notification.recipientId, message: notification.message })));
+  console.table(notifiedIssues.map((notification: { id: number; recipientId: number; message: string }) => ({ id: notification.id, recipientId: notification.recipientId, message: notification.message })));
 }
 
 main()

@@ -30,7 +30,7 @@ async function getDepartmentEmployeeIds(departmentId: number) {
     select: { id: true }
   });
 
-  return employees.map((employee) => employee.id);
+  return employees.map((employee: { id: number }) => employee.id);
 }
 
 export async function calcEnvironmentalScore(departmentId: number) {
@@ -81,7 +81,7 @@ export async function calcSocialScore(departmentId: number) {
 
 export async function calcGovernanceScore(departmentId: number) {
   const employeeIds = await getDepartmentEmployeeIds(departmentId);
-  const [policyCount, acknowledgements, openIssues] = await Promise.all([
+  const [policyCount, acknowledgements, openIssues]: [number, number, Array<{ isOverdue: boolean }>] = await Promise.all([
     prisma.eSGPolicy.count(),
     prisma.policyAcknowledgement.count({ where: { employeeId: { in: employeeIds } } }),
     prisma.complianceIssue.findMany({
@@ -95,7 +95,7 @@ export async function calcGovernanceScore(departmentId: number) {
 
   const totalPossible = employeeIds.length * policyCount;
   const acknowledgementRate = totalPossible > 0 ? (acknowledgements / totalPossible) * 100 : 100;
-  const penalty = openIssues.length * 10 + openIssues.filter((issue) => issue.isOverdue).length * 10;
+  const penalty = openIssues.length * 10 + openIssues.filter((issue: any) => issue.isOverdue).length * 10;
 
   return clamp(acknowledgementRate - penalty);
 }
@@ -127,13 +127,13 @@ export async function calcDepartmentScore(departmentId: number) {
 }
 
 export async function calcOverallESGScore() {
-  const departments = await prisma.department.findMany({ select: { id: true } });
+  const departments: Array<{ id: number }> = await prisma.department.findMany({ select: { id: true } });
   if (departments.length === 0) {
     return 0;
   }
 
-  const scores = await Promise.all(departments.map((department) => calcDepartmentScore(department.id)));
-  return scores.reduce((sum, score) => sum + score.totalScore, 0) / scores.length;
+  const scores = await Promise.all(departments.map((department: any) => calcDepartmentScore(department.id)));
+  return scores.reduce((sum: any, score: any) => sum + score.totalScore, 0) / scores.length;
 }
 
 export async function autoCalculateEmission(input: CarbonTransactionInput) {
@@ -255,7 +255,7 @@ export async function checkBadgeUnlocks(employeeId: number) {
 }
 
 export async function redeemReward(employeeId: number, rewardId: number) {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: any) => {
     const reward = await tx.reward.findUnique({ where: { id: rewardId } });
     if (!reward) {
       return { success: false, reason: `Reward ${rewardId} not found.` };
