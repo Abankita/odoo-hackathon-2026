@@ -1,0 +1,287 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Department {
+  id                 Int                 @id @default(autoincrement())
+  name               String
+  code               String              @unique
+  head               String
+  parentDepartmentId Int?
+  employeeCount      Int
+  status             String              @default("Active")
+  parentDepartment   Department?         @relation("DepartmentHierarchy", fields: [parentDepartmentId], references: [id], onDelete: SetNull)
+  childDepartments   Department[]        @relation("DepartmentHierarchy")
+  employees          Employee[]
+  productProfiles    ProductESGProfile[]
+  environmentalGoals EnvironmentalGoal[]
+  carbonTransactions CarbonTransaction[]
+  audits             Audit[]
+  departmentScores   DepartmentScore[]
+
+  @@index([parentDepartmentId])
+}
+
+model Category {
+  id            Int             @id @default(autoincrement())
+  name          String
+  type          String
+  status        String          @default("Active")
+  esgPolicies   ESGPolicy[]
+  csrActivities CSRActivity[]
+  challenges    Challenge[]
+}
+
+model EmissionFactor {
+  id               Int                  @id @default(autoincrement())
+  sourceType       String
+  unit             String
+  co2PerUnit       Float
+  carbonTransactions CarbonTransaction[]
+}
+
+model ProductESGProfile {
+  id              Int        @id @default(autoincrement())
+  productName     String
+  departmentId    Int
+  materialType    String
+  carbonFootprint Float
+  recyclable      Boolean
+  department      Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@index([departmentId])
+}
+
+model EnvironmentalGoal {
+  id           Int        @id @default(autoincrement())
+  name         String
+  departmentId Int
+  targetCO2    Float
+  currentCO2   Float
+  deadline     DateTime
+  status       String
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@index([departmentId])
+}
+
+model ESGPolicy {
+  id              Int                     @id @default(autoincrement())
+  title           String
+  categoryId      Int
+  description     String
+  effectiveDate   DateTime
+  status          String                  @default("Active")
+  category        Category                @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  acknowledgements PolicyAcknowledgement[]
+
+  @@index([categoryId])
+}
+
+model Badge {
+  id            Int             @id @default(autoincrement())
+  name          String
+  description   String
+  unlockRule    String
+  icon          String
+  employeeBadges EmployeeBadge[]
+}
+
+model Reward {
+  id             Int     @id @default(autoincrement())
+  name           String
+  description    String
+  pointsRequired  Int
+  stock          Int
+  status         String  @default("Active")
+}
+
+model Employee {
+  id                       Int                     @id @default(autoincrement())
+  name                     String
+  departmentId             Int
+  xp                       Int                     @default(0)
+  points                   Int                     @default(0)
+  department               Department              @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  employeeBadges           EmployeeBadge[]
+  participations           EmployeeParticipation[]
+  challengeParticipations   ChallengeParticipation[]
+  acknowledgements         PolicyAcknowledgement[]
+  ownedIssues              ComplianceIssue[]       @relation("IssueOwner")
+  notifications            Notification[]          @relation("RecipientNotifications")
+
+  @@index([departmentId])
+}
+
+model EmployeeBadge {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  badgeId    Int
+  unlockedAt DateTime
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, badgeId])
+  @@index([employeeId])
+  @@index([badgeId])
+}
+
+model CarbonTransaction {
+  id               Int            @id @default(autoincrement())
+  departmentId     Int
+  sourceType       String
+  quantity         Float
+  emissionFactorId Int
+  computedCO2      Float
+  date             DateTime
+  autoCalculated   Boolean
+  department       Department     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  emissionFactor   EmissionFactor @relation(fields: [emissionFactorId], references: [id], onDelete: Restrict)
+
+  @@index([departmentId])
+  @@index([emissionFactorId])
+}
+
+model CSRActivity {
+  id               Int                   @id @default(autoincrement())
+  title            String
+  categoryId       Int
+  description      String
+  evidenceRequired Boolean
+  date             DateTime
+  status           String                @default("Planned")
+  category         Category              @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  participations   EmployeeParticipation[]
+
+  @@index([categoryId])
+}
+
+model EmployeeParticipation {
+  id             Int            @id @default(autoincrement())
+  employeeId     Int
+  activityId     Int
+  proofUrl       String?
+  approvalStatus String
+  pointsEarned   Int
+  completionDate DateTime?
+  employee       Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  activity       CSRActivity    @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([activityId])
+}
+
+model Challenge {
+  id               Int                     @id @default(autoincrement())
+  title            String
+  categoryId       Int
+  description      String
+  xp               Int
+  difficulty       String
+  evidenceRequired Boolean
+  deadline         DateTime
+  status           String
+  category         Category                @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  participations   ChallengeParticipation[]
+
+  @@index([categoryId])
+}
+
+model ChallengeParticipation {
+  id             Int            @id @default(autoincrement())
+  challengeId    Int
+  employeeId     Int
+  progress       Int            @default(0)
+  proofUrl       String?
+  approvalStatus String
+  xpAwarded      Int
+  challenge      Challenge      @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  employee       Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([challengeId])
+  @@index([employeeId])
+}
+
+model PolicyAcknowledgement {
+  id               Int        @id @default(autoincrement())
+  employeeId       Int
+  policyId         Int
+  acknowledgedDate DateTime
+  employee         Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  policy           ESGPolicy  @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, policyId])
+  @@index([employeeId])
+  @@index([policyId])
+}
+
+model Audit {
+  id               Int              @id @default(autoincrement())
+  title            String
+  departmentId     Int
+  auditorName      String
+  date             DateTime
+  findings         String
+  status           String
+  department       Department       @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  complianceIssues ComplianceIssue[]
+
+  @@index([departmentId])
+}
+
+model ComplianceIssue {
+  id          Int          @id @default(autoincrement())
+  auditId     Int
+  severity    String
+  description String
+  ownerId     Int
+  dueDate     DateTime
+  status      String
+  isOverdue   Boolean      @default(false)
+  audit       Audit        @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  owner       Employee     @relation("IssueOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+
+  @@index([auditId])
+  @@index([ownerId])
+}
+
+model DepartmentScore {
+  id                 Int        @id @default(autoincrement())
+  departmentId       Int
+  environmentalScore Float
+  socialScore        Float
+  governanceScore    Float
+  totalScore         Float
+  computedAt         DateTime
+  department         Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@index([departmentId])
+}
+
+model Notification {
+  id           Int              @id @default(autoincrement())
+  recipientId  Int
+  type         String
+  message      String
+  read         Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  recipient    Employee         @relation("RecipientNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+}
+
+model OrgConfig {
+  id               Int     @id @default(autoincrement())
+  envWeight        Int     @default(40)
+  socialWeight     Int     @default(30)
+  govWeight        Int     @default(30)
+  autoEmissionCalc Boolean @default(true)
+  evidenceRequired Boolean @default(true)
+  badgeAutoAward   Boolean @default(true)
+  emailAlerts      Boolean @default(false)
+}
