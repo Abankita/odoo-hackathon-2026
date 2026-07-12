@@ -223,6 +223,9 @@ export async function createCarbonTransactionWithAutoCalc(input: Parameters<type
       computedCO2: calculated.computedCO2 ?? 0,
       date: calculated.date ?? new Date(),
       autoCalculated: calculated.autoCalculated ?? true
+    },
+    include: {
+      department: true
     }
   });
 

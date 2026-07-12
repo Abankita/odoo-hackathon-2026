@@ -66,17 +66,41 @@ export function EnvironmentalClient({
   const [products, setProducts] = useState<ProductESG[]>(initialProducts);
   const [transactions, setTransactions] = useState<CarbonTx[]>(initialTransactions);
 
-  // Sync state props with refreshed database content
+  // Sync state props with refreshed database content (using robust merge)
   useEffect(() => {
-    setFactors(initialFactors);
+    setFactors((prev) => {
+      const merged = [...initialFactors];
+      for (const f of prev) {
+        if (!merged.some((m) => m.id === f.id)) {
+          merged.push(f);
+        }
+      }
+      return merged;
+    });
   }, [initialFactors]);
 
   useEffect(() => {
-    setProducts(initialProducts);
+    setProducts((prev) => {
+      const merged = [...initialProducts];
+      for (const p of prev) {
+        if (!merged.some((m) => m.id === p.id)) {
+          merged.push(p);
+        }
+      }
+      return merged;
+    });
   }, [initialProducts]);
 
   useEffect(() => {
-    setTransactions(initialTransactions);
+    setTransactions((prev) => {
+      const merged = [...initialTransactions];
+      for (const t of prev) {
+        if (!merged.some((m) => m.id === t.id)) {
+          merged.push(t);
+        }
+      }
+      return merged;
+    });
   }, [initialTransactions]);
 
   // Forms state
